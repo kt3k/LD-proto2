@@ -41,20 +41,25 @@ body {
 <script>
 
 $(function () {
-    $('.circle')
+    var $circle = $('.circle');
+    $circle
         .swipeCross();
-    $('.circle').on('swipeup', function () {
-        $(this).css('top', '-=100px')
+    $circle.on('swipeup', function () {
+        console.log('swipeup');
+        $circle.css('top', '-=100px')
     })
     .on('swiperight', function () {
-        $(this).css('left', '+=100px')
+        console.log('swiperight');
+        $circle.css('left', '+=100px')
     })
     .on('swipeleft', function () {
-        $(this).css('left', '-=100px')
+        console.log('swipeleft');
+        $circle.css('left', '-=100px')
     })
     .on('swipedown', function () {
-        $(this).css('top', '+=100px')
-    })
+        console.log('swipedown');
+        $circle.css('top', '+=100px')
+    });
 });
 
 </script>
