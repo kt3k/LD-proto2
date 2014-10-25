@@ -2,4 +2,87 @@
 <script src="bower_components/jquery/dist/jquery.js"></script>
 <script src="bower_components/swipe-event/swipe-event.js"></script>
 <script src="bower_components/swipe-event/swipe-cross.js"></script>
+<style>
+
+body {
+    position: relative;
+}
+
+.circle {
+    position: absolute;
+    left: 100px;
+    top: 100px;
+    transition-duration: 500ms;
+}
+
+.container {
+}
+
+.cell {
+    position: relative;
+    width: 99px;
+    height: 99px;
+    border-right: solid 1px rgba(0,0,0,0.5);
+    border-bottom: solid 1px rgba(0,0,0,0.5);
+    float: left;
+}
+
+.row {
+    position: relative;
+    clear: both;
+}
+
+
+
+</style>
+
+<script>
+
+$(function () {
+    $('.circle')
+        .swipeCross();
+    $('.circle').on('swipeup', function () {
+        $(this).css('top', '-=100px')
+    })
+    .on('swiperight', function () {
+        $(this).css('left', '+=100px')
+    })
+    .on('swipeleft', function () {
+        $(this).css('left', '-=100px')
+    })
+    .on('swipedown', function () {
+        $(this).css('top', '+=100px')
+    })
+});
+
+</script>
+
+<body bgcolor="#cfc">
+
+
+<div class="container">
+
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+
+</div>
+
+<svg class="circle" width="100" height="100">
+   <circle cx="50" cy="50" r="49" stroke="rgba(0,0,0,0.5)" stroke-width="1" fill="rgba(0,0,0,0.3)" />
+</svg>
+
+</body>
 </html>
