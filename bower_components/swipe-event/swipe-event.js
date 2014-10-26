@@ -13,7 +13,7 @@ this.SwipeEvent = (function (window, $) {
             CANCEL: 'swipecancel',
             END: 'swipeend'
         }
-    }
+    };
 
     var exports = function (options) {
         options = options || {};
@@ -44,7 +44,7 @@ this.SwipeEvent = (function (window, $) {
 
 
     prototype.swipeEnd = function () {
-        if (this.fingerCount != 1) {
+        if (this.fingerCount !== 1) {
             this.fingerCount = 0;
 
             return;
@@ -58,7 +58,7 @@ this.SwipeEvent = (function (window, $) {
 
     // touch event handlers and a resetter
     prototype.touchStart = function (touch) {
-        this.touchInitial = touch;
+        this.touchInitial = {pageX: touch.pageX, pageY: touch.pageY};
         this.touchCurrent = touch;
         this.fingerCount = 1;
     };
@@ -195,13 +195,17 @@ this.SwipeEvent = (function (window, $) {
 
         $.fn.swipeEvent = function () {
             this._swipeEvent = new exports({elm: this[0]});
+
+            return this;
         };
 
         $.fn.swipeEventUnbind = function () {
             this._swipeEvent.unbindEvents();
 
             this._swipeEvent = null;
-        }
+
+            return this;
+        };
 
     }
 
