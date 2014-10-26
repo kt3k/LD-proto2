@@ -13,7 +13,7 @@
     "tests"
   ],
   "dependencies": {
-    "swipe-event": "~0.2.2",
+    "swipe-event": "~0.3.0",
     "jquery": "~2.1.1"
   }
 }
