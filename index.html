@@ -70,7 +70,8 @@ $(function () {
     .swipeCross()
     .on('swipeup', function () {
         console.log('swipeup');
-        x -= 101;
+        x += 202;
+        x %= 303;
         $circle.css('top', x + 'px')
 
         common();
@@ -78,13 +79,15 @@ $(function () {
     .on('swiperight', function () {
         console.log('swiperight');
         y += 101;
+        y %= 303;
         $circle.css('left', y + 'px')
 
         common();
     })
     .on('swipeleft', function () {
         console.log('swipeleft');
-        y -= 101;
+        y += 202;
+        y %= 303;
         $circle.css('left', y + 'px')
 
         common();
@@ -92,6 +95,7 @@ $(function () {
     .on('swipedown', function () {
         console.log('swipedown');
         x += 101;
+        x %= 303;
         $circle.css('top', x + 'px')
 
         common();
