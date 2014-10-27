@@ -62,41 +62,42 @@ body {
 <script>
 
 $(function () {
-    var x = 101;
-    var y = 101;
+    var UNIT = 101;
+    var x = 1;
+    var y = 1;
     var z = 0;
     var $circle = $('.circle');
     $('.wrapper')
     .swipeCross()
     .on('swipeup', function () {
         console.log('swipeup');
-        x += 202;
-        x %= 303;
-        $circle.css('top', x + 'px')
+        x += 2;
+        x %= 3;
+        $circle.css('top', x * UNIT + 'px')
 
         common();
     })
     .on('swiperight', function () {
         console.log('swiperight');
-        y += 101;
-        y %= 303;
-        $circle.css('left', y + 'px')
+        y += 1;
+        y %= 3;
+        $circle.css('left', y * UNIT + 'px')
 
         common();
     })
     .on('swipeleft', function () {
         console.log('swipeleft');
-        y += 202;
-        y %= 303;
-        $circle.css('left', y + 'px')
+        y += 2;
+        y %= 3;
+        $circle.css('left', y * UNIT + 'px')
 
         common();
     })
     .on('swipedown', function () {
         console.log('swipedown');
-        x += 101;
-        x %= 303;
-        $circle.css('top', x + 'px')
+        x += 1;
+        x %= 3;
+        $circle.css('top', x * UNIT + 'px')
 
         common();
     })
