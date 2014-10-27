@@ -54,24 +54,30 @@ body {
 <script>
 
 $(function () {
+    var x = 101;
+    var y = 101;
     var $circle = $('.circle');
     $('.wrapper')
     .swipeCross()
     .on('swipeup', function () {
         console.log('swipeup');
-        $circle.css('top', '-=101px')
+        x -= 101;
+        $circle.css('top', x + 'px')
     })
     .on('swiperight', function () {
         console.log('swiperight');
-        $circle.css('left', '+=101px')
+        y += 101;
+        $circle.css('left', y + 'px')
     })
     .on('swipeleft', function () {
         console.log('swipeleft');
-        $circle.css('left', '-=101px')
+        y -= 101;
+        $circle.css('left', y + 'px')
     })
     .on('swipedown', function () {
         console.log('swipedown');
-        $circle.css('top', '+=101px')
+        x += 101;
+        $circle.css('top', x + 'px')
     })
     .on('swipecancel', function () {
         console.log('swipecancel');
