@@ -15,6 +15,14 @@ body {
     position: relative;
 }
 
+.indicator {
+    position: absolute;
+    width: 303px;
+    height: 1px;
+    background-color: rgba(255,0,0,.2);
+    transition-duration: 500ms;
+}
+
 .circle {
     position: absolute;
     left: 101px;
@@ -56,6 +64,7 @@ body {
 $(function () {
     var x = 101;
     var y = 101;
+    var z = 0;
     var $circle = $('.circle');
     $('.wrapper')
     .swipeCross()
@@ -63,31 +72,47 @@ $(function () {
         console.log('swipeup');
         x -= 101;
         $circle.css('top', x + 'px')
+
+        common();
     })
     .on('swiperight', function () {
         console.log('swiperight');
         y += 101;
         $circle.css('left', y + 'px')
+
+        common();
     })
     .on('swipeleft', function () {
         console.log('swipeleft');
         y -= 101;
         $circle.css('left', y + 'px')
+
+        common();
     })
     .on('swipedown', function () {
         console.log('swipedown');
         x += 101;
         $circle.css('top', x + 'px')
+
+        common();
     })
     .on('swipecancel', function () {
         console.log('swipecancel');
-    })
+
+        common();
+    });
+
+    var common = function () {
+        z += 7;
+        $('.indicator').css('height', z + 'px');
+    };
 });
 
 </script>
 
 <body bgcolor="#cfc">
 
+<div class="indicator"></div>
 
 <div class="container">
 
@@ -114,6 +139,7 @@ $(function () {
    <circle cx="50" cy="50" r="49" stroke="rgba(0,0,0,0.5)" stroke-width="1" fill="rgba(0,0,0,0.3)" />
 </svg>
 </div>
+
 
 <div class="wrapper"></div>
 
