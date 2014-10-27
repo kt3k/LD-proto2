@@ -1,0 +1,147 @@
+<html>
+<title>LD-proto</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="bower_components/jquery/dist/jquery.js"></script>
+<script src="bower_components/swipe-event/swipe-event.js"></script>
+<script src="bower_components/swipe-event/swipe-cross.js"></script>
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    position: relative;
+}
+
+.indicator {
+    position: absolute;
+    width: 303px;
+    height: 1px;
+    background-color: rgba(255,0,0,.2);
+    transition-duration: 300ms;
+}
+
+.circle {
+    position: absolute;
+    left: 101px;
+    top: 101px;
+    transition-duration: 300ms;
+}
+
+.container {
+}
+
+.cell {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-right: solid 1px rgba(0,0,0,0.5);
+    border-bottom: solid 1px rgba(0,0,0,0.5);
+    float: left;
+}
+
+.row {
+    position: relative;
+    clear: both;
+}
+
+.wrapper {
+    position: absolute;
+    height: 303px;
+    width: 303px;
+    left: 0px;
+    top: 0px;
+}
+
+
+
+</style>
+
+<script>
+
+$(function () {
+    var x = 101;
+    var y = 101;
+    var z = 0;
+    var $circle = $('.circle');
+    $('.wrapper')
+    .swipeCross()
+    .on('swipeup', function () {
+        console.log('swipeup');
+        x -= 101;
+        $circle.css('top', x + 'px')
+
+        common();
+    })
+    .on('swiperight', function () {
+        console.log('swiperight');
+        y += 101;
+        $circle.css('left', y + 'px')
+
+        common();
+    })
+    .on('swipeleft', function () {
+        console.log('swipeleft');
+        y -= 101;
+        $circle.css('left', y + 'px')
+
+        common();
+    })
+    .on('swipedown', function () {
+        console.log('swipedown');
+        x += 101;
+        $circle.css('top', x + 'px')
+
+        common();
+    })
+    .on('swipecancel', function () {
+        console.log('swipecancel');
+
+        common();
+    });
+
+    var common = function () {
+        z += 4;
+        $('.indicator').css('height', z + 'px');
+    };
+});
+
+</script>
+
+<body bgcolor="#cfc">
+
+<div class="indicator"></div>
+
+<div class="container">
+
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+
+</div>
+
+<div class="circle">
+<svg class="" width="100" height="100">
+   <circle cx="50" cy="50" r="49" stroke="rgba(0,0,0,0.5)" stroke-width="1" fill="rgba(0,0,0,0.3)" />
+</svg>
+</div>
+
+
+<div class="wrapper"></div>
+
+</body>
+</html>
