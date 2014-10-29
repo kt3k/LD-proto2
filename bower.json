@@ -15,6 +15,6 @@
   "dependencies": {
     "swipe-event": "~0.3.0",
     "jquery": "~2.1.1",
-    "arrowkeys": "~0.1.1"
+    "arrowkeys": "~0.1.2"
   }
 }
