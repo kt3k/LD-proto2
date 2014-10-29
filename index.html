@@ -72,14 +72,26 @@ $(function () {
     bindEvents();
 });
 
+var scramble = function () {
+    map.forEach(function (row) {
+        row.forEach(function (cell) {
+            cell.random();
+        });
+    });
+};
+
 var initMap = function () {
-    return [0, 1, 2].map(function (x) {
+    return [0, 1, 2, 3, 4, 5].map(function (x) {
         return [0, 1, 2].map(function (y) {
             var w = new Wanderer(x, y);
             w.element().prependTo(document.body);
             return w;
         });
     });
+};
+
+var dice = function (n) {
+    return Math.floor(Math.random() * n);
 };
 
 var Wanderer = (function () {
@@ -97,8 +109,8 @@ var Wanderer = (function () {
             'width': '51px',
             'height': '51px',
             'transition-duration': UDUR,
-            'top': UNIT * this.y + 25 + 'px',
-            'left': UNIT * this.x + 25 + 'px',
+            'top': UNIT * (this.y % 3) + 25 + 'px',
+            'left': UNIT * (this.x % 3) + 25 + 'px',
             'border-radius': '25px'
         });
     };
@@ -119,6 +131,9 @@ var Wanderer = (function () {
     wPrototype.down = function () { this.move(0, 1); };
     wPrototype.left = function () { this.move(2, 0); };
     wPrototype.right = function () { this.move(1, 0); };
+    wPrototype.random = function () {
+        this[['up', 'down', 'left', 'right'][dice(4)]]();
+    };
 
     return exports;
 }());
@@ -162,21 +177,25 @@ var bindEvents = function () {
     .on('swipeup', function () {
         console.log('swipeup');
         circle.up();
+        scramble();
         indicator.forward();
     })
     .on('swiperight', function () {
         console.log('swiperight');
         circle.right();
+        scramble();
         indicator.forward();
     })
     .on('swipeleft', function () {
         console.log('swipeleft');
         circle.left();
+        scramble();
         indicator.forward();
     })
     .on('swipedown', function () {
         console.log('swipedown');
         circle.down();
+        scramble();
         indicator.forward();
     })
     .on('swipecancel', function () {
