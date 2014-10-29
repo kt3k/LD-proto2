@@ -69,27 +69,66 @@ var UDUR = '300ms';
 var map;
 
 $(function () {
-    map = initMap();
-    bindEvents();
+    map = new Map();
+    bindEvents({up: function () {
+
+        circle.up();
+        map.left();
+        indicator.forward();
+
+    }, down: function () {
+
+        circle.down();
+        map.right();
+        indicator.forward();
+
+    }, left: function () {
+
+        circle.left();
+        map.down();
+        indicator.forward();
+
+    }, right: function () {
+
+        circle.right();
+        map.up();
+        indicator.forward();
+
+    }});
 });
 
-var scramble = function () {
-    map.forEach(function (row) {
-        row.forEach(function (cell) {
-            cell.random();
-        });
-    });
-};
+var Map = (function () {
 
-var initMap = function () {
-    return [0, 1, 2, 3, 4, 5].map(function (x) {
-        return [0, 1, 2].map(function (y) {
-            var w = new Wanderer(x, y, Color.black().hue(dice(360)).saturation(100).light(50).alpha(0.6));
-            w.element().prependTo(document.body);
-            return w;
+    var exports = function () {
+        this.rows = [0, 1, 2].map(function (x) {
+            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (y) {
+                var w = new Wanderer(x, y, Color.black().hue(dice(360)).saturation(100).light(50).alpha(0.6));
+                w.element().prependTo(document.body);
+                return w;
+            });
         });
-    });
-};
+    };
+
+    var mapPrototype = exports.prototype;
+
+    mapPrototype.all = function (command, args) {
+
+        this.rows.forEach(function (row) {
+            row.forEach(function (cell) {
+                cell[command].apply(cell, args);
+            });
+        });
+
+    };
+
+    mapPrototype.up = function () { this.all('up'); };
+    mapPrototype.down = function () { this.all('down'); };
+    mapPrototype.right = function () { this.all('right'); };
+    mapPrototype.left = function () { this.all('left'); };
+
+    return exports;
+
+}());
 
 var dice = function (n) {
     return Math.floor(Math.random() * n);
@@ -100,20 +139,28 @@ var Wanderer = (function () {
         this.x = x;
         this.y = y;
         this.color = color;
-    };
-
-    var wPrototype = exports.prototype;
-
-    wPrototype.element = function () {
-        return this.$dom = $('<div />').css({
+        this.$dom = $('<div />').css({
             'position': 'absolute',
             'background-color': this.color.css(),
             'width': '51px',
             'height': '51px',
             'transition-duration': UDUR,
-            'top': UNIT * (this.y % 3) + 25 + 'px',
-            'left': UNIT * (this.x % 3) + 25 + 'px',
             'border-radius': '25px'
+        });
+
+        this.locate();
+    };
+
+    var wPrototype = exports.prototype;
+
+    wPrototype.element = function () {
+        return this.$dom;
+    };
+
+    wPrototype.locate = function () {
+        this.$dom.css({
+            'top': UNIT * this.y + 25 + 'px',
+            'left': UNIT * this.x + 25 + 'px',
         });
     };
 
@@ -121,15 +168,12 @@ var Wanderer = (function () {
         this.x += x;
         this.x %= 3;
         this.y += y;
-        this.y %= 3;
+        this.y %= 11;
 
-        this.$dom.css({
-            'top': UNIT * this.y + 25 + 'px',
-            'left': UNIT * this.x + 25 + 'px',
-        });
+        this.locate();
     };
 
-    wPrototype.up = function () { this.move(0, 2); };
+    wPrototype.up = function () { this.move(0, 10); };
     wPrototype.down = function () { this.move(0, 1); };
     wPrototype.left = function () { this.move(2, 0); };
     wPrototype.right = function () { this.move(1, 0); };
@@ -204,27 +248,11 @@ var indicator = {
     },
 };
 
-var bindEvents = function () {
-    var up = function () {
-        circle.up();
-        scramble();
-        indicator.forward();
-    };
-    var down = function () {
-        circle.down();
-        scramble();
-        indicator.forward();
-    };
-    var left = function () {
-        circle.left();
-        scramble();
-        indicator.forward();
-    };
-    var right = function () {
-        circle.right();
-        scramble();
-        indicator.forward();
-    };
+var bindEvents = function (args) {
+    var up = args.up;
+    var down = args.down;
+    var right = args.right;
+    var left = args.left;
     $('.wrapper').swipeCross()
     .on('swipeup', function () { console.log('swipeup'); up();})
     .on('swiperight', function () { console.log('swiperight'); right(); })
