@@ -63,74 +63,125 @@ body {
 
 var UNIT = 101;
 
+var UDUR = '300ms';
+
+var map;
+
 $(function () {
-    initGrid();
-    initMap();
+    map = initMap();
+    bindEvents();
 });
 
 var initMap = function () {
-    [0, 1, 2].forEach(function (x) {
-        [0, 1, 2].forEach(function (y) {
-            $('<div />').css({
-                'position': 'absolute',
-                'background-color': 'rgba(0,255,0,0.2)',
-                'width': '51px',
-                'height': '51px',
-                'top': UNIT * x + 25 + 'px',
-                'left': UNIT * y + 25 + 'px',
-                'border-radius': '25px'
-            }).prependTo(document.body);
+    return [0, 1, 2].map(function (x) {
+        return [0, 1, 2].map(function (y) {
+            var w = new Wanderer(x, y);
+            w.element().prependTo(document.body);
+            return w;
         });
     });
 };
 
-var initGrid = function () {
-    var x = 1;
-    var y = 1;
-    var z = 0;
-    var $circle = $('.circle');
+var Wanderer = (function () {
+    var exports = function (x, y) {
+        this.x = x;
+        this.y = y;
+    };
+
+    var wPrototype = exports.prototype;
+
+    wPrototype.element = function () {
+        return this.$dom = $('<div />').css({
+            'position': 'absolute',
+            'background-color': 'rgba(0,255,0,0.2)',
+            'width': '51px',
+            'height': '51px',
+            'transition-duration': UDUR,
+            'top': UNIT * this.y + 25 + 'px',
+            'left': UNIT * this.x + 25 + 'px',
+            'border-radius': '25px'
+        });
+    };
+
+    wPrototype.move = function (x, y) {
+        this.x += x;
+        this.x %= 3;
+        this.y += y;
+        this.y %= 3;
+
+        this.$dom.css({
+            'top': UNIT * this.y + 25 + 'px',
+            'left': UNIT * this.x + 25 + 'px',
+        });
+    };
+
+    wPrototype.up = function () { this.move(0, 2); };
+    wPrototype.down = function () { this.move(0, 1); };
+    wPrototype.left = function () { this.move(2, 0); };
+    wPrototype.right = function () { this.move(1, 0); };
+
+    return exports;
+}());
+
+var circle = {
+    x: 1,
+    y: 1,
+    up: function () {
+        this.x += 2;
+        this.x %= 3;
+        $('.circle').css('top', this.x * UNIT + 'px')
+    },
+    down: function () {
+        this.x += 1;
+        this.x %= 3;
+        $('.circle').css('top', this.x * UNIT + 'px')
+    },
+    left: function () {
+        this.y += 2;
+        this.y %= 3;
+        $('.circle').css('left', this.y * UNIT + 'px')
+    },
+    right: function () {
+        this.y += 1;
+        this.y %= 3;
+        $('.circle').css('left', this.y * UNIT + 'px')
+    },
+};
+
+var indicator = {
+    z: 0,
+    forward: function () {
+        this.z += 4;
+        $('.indicator').css('height', this.z + 'px');
+    },
+};
+
+var bindEvents = function () {
     $('.wrapper')
     .swipeCross()
     .on('swipeup', function () {
         console.log('swipeup');
-        x += 2;
-        x %= 3;
-        $circle.css('top', x * UNIT + 'px')
-
-        common();
+        circle.up();
+        indicator.forward();
     })
     .on('swiperight', function () {
         console.log('swiperight');
-        y += 1;
-        y %= 3;
-        $circle.css('left', y * UNIT + 'px')
-
-        common();
+        circle.right();
+        indicator.forward();
     })
     .on('swipeleft', function () {
         console.log('swipeleft');
-        y += 2;
-        y %= 3;
-        $circle.css('left', y * UNIT + 'px')
-
-        common();
+        circle.left();
+        indicator.forward();
     })
     .on('swipedown', function () {
         console.log('swipedown');
-        x += 1;
-        x %= 3;
-        $circle.css('top', x * UNIT + 'px')
-
-        common();
+        circle.down();
+        indicator.forward();
     })
     .on('swipecancel', function () {
         console.log('swipecancel');
     });
-
-    var common = function () {
-        z += 4;
-        $('.indicator').css('height', z + 'px');
-    };
 };
 
 </script>
