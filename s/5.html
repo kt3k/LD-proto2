@@ -4,6 +4,7 @@
 <script src="../bower_components/jquery/dist/jquery.js"></script>
 <script src="../bower_components/swipe-event/swipe-event.js"></script>
 <script src="../bower_components/swipe-event/swipe-cross.js"></script>
+<script src="../bower_components/arrowkeys/arrowkeys.js"></script>
 <style>
 
 * {
@@ -198,40 +199,44 @@ var indicator = {
     z: 0,
     forward: function () {
         this.z += 4;
+        this.z %= 3 * UNIT;
         $('.indicator').css('height', this.z + 'px');
     },
 };
 
 var bindEvents = function () {
-    $('.wrapper')
-    .swipeCross()
-    .on('swipeup', function () {
-        console.log('swipeup');
+    var up = function () {
         circle.up();
         scramble();
         indicator.forward();
-    })
-    .on('swiperight', function () {
-        console.log('swiperight');
-        circle.right();
-        scramble();
-        indicator.forward();
-    })
-    .on('swipeleft', function () {
-        console.log('swipeleft');
-        circle.left();
-        scramble();
-        indicator.forward();
-    })
-    .on('swipedown', function () {
-        console.log('swipedown');
+    };
+    var down = function () {
         circle.down();
         scramble();
         indicator.forward();
-    })
-    .on('swipecancel', function () {
-        console.log('swipecancel');
-    });
+    };
+    var left = function () {
+        circle.left();
+        scramble();
+        indicator.forward();
+    };
+    var right = function () {
+        circle.right();
+        scramble();
+        indicator.forward();
+    };
+    $('.wrapper').swipeCross()
+    .on('swipeup', function () { console.log('swipeup'); up();})
+    .on('swiperight', function () { console.log('swiperight'); right(); })
+    .on('swipeleft', function () { console.log('swipeleft'); left(); })
+    .on('swipedown', function () { console.log('swipedown'); down(); })
+    .on('swipecancel', function () { console.log('swipecancel'); });
+
+    $(document).arrowkeys()
+    .on('upkey', function () { console.log('upkey'); up();})
+    .on('rightkey', function () { console.log('rightkey'); right(); })
+    .on('leftkey', function () { console.log('leftkey'); left(); })
+    .on('downkey', function () { console.log('downkey'); down(); })
 };
 
 </script>
