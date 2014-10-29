@@ -73,7 +73,7 @@ $(function () {
     bindEvents({up: function () {
 
         circle.up();
-        map.left();
+        map.right();
         indicator.forward();
 
     }, down: function () {
@@ -85,7 +85,7 @@ $(function () {
     }, left: function () {
 
         circle.left();
-        map.down();
+        map.up();
         indicator.forward();
 
     }, right: function () {
