@@ -109,7 +109,7 @@ var Map = (function () {
     var exports = function () {
         this.rows = [0, 1, 2].map(function (x) {
             return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (y) {
-                var w = new Wanderer(x, y, Color.black().hue(dice(30)).saturation(90 + dice(10)).light(50).alpha(0.6));
+                var w = new Wanderer(x, y, Color.black().hue(dice(30) + 150).saturation(90 + dice(10)).light(50).alpha(0.6));
                 w.element().prependTo(document.body);
                 return w;
             });
@@ -160,6 +160,7 @@ var Wanderer = (function () {
             'width': '51px',
             'height': '51px',
             'transition-duration': UDUR,
+            'transition-delay': UDUR,
             'border-radius': '25px'
         });
 
