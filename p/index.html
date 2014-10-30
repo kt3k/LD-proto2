@@ -70,31 +70,34 @@ var map;
 
 $(function () {
     map = new Map();
-    bindEvents({up: function () {
+    var up = function () {
 
         circle.up();
-        map.right();
-        indicator.forward();
 
-    }, down: function () {
+    };
+    var down = function () {
 
         circle.down();
-        map.right();
-        indicator.forward();
 
-    }, left: function () {
+    };
+    var left = function () {
 
         circle.left();
         map.up();
+        map.some(3, 'randomHue');
         indicator.forward();
 
-    }, right: function () {
+    };
+    var right = function () {
 
         circle.right();
         map.up();
+        map.some(3, 'randomHue');
         indicator.forward();
 
-    }});
+    };
+
+    bindEvents(up, down, left, right);
 });
 
 var Map = (function () {
@@ -116,6 +119,18 @@ var Map = (function () {
         this.rows.forEach(function (row) {
             row.forEach(function (cell) {
                 cell[command].apply(cell, args);
+            });
+        });
+
+    };
+
+    mapPrototype.some = function (percent, command, args) {
+
+        this.rows.forEach(function (row) {
+            row.forEach(function (cell) {
+                if (Math.random() < percent / 100) {
+                    cell[command].apply(cell, args);
+                }
             });
         });
 
@@ -179,6 +194,11 @@ var Wanderer = (function () {
     wPrototype.right = function () { this.move(1, 0); };
     wPrototype.random = function () {
         this[['up', 'down', 'left', 'right'][dice(4)]]();
+    };
+
+    wPrototype.randomHue = function () {
+        this.color.hue(dice(360));
+        this.$dom.css('background-color', this.color.css());
     };
 
     return exports;
@@ -248,11 +268,8 @@ var indicator = {
     },
 };
 
-var bindEvents = function (args) {
-    var up = args.up;
-    var down = args.down;
-    var right = args.right;
-    var left = args.left;
+var bindEvents = function (up, down, left, right) {
+
     $('.wrapper').swipeCross()
     .on('swipeup', function () { console.log('swipeup'); up();})
     .on('swiperight', function () { console.log('swiperight'); right(); })
