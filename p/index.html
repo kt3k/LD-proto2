@@ -5,6 +5,8 @@
 <script src="../bower_components/swipe-event/swipe-event.js"></script>
 <script src="../bower_components/swipe-event/swipe-cross.js"></script>
 <script src="../bower_components/arrowkeys/arrowkeys.js"></script>
+<script src="../js/util.js"></script>
+<script src="../js/color.js"></script>
 <style>
 
 * {
@@ -18,8 +20,8 @@ body {
 
 .indicator {
     position: absolute;
-    width: 303px;
-    height: 1px;
+    height: 303px;
+    width: 1px;
     background-color: rgba(255,0,0,.2);
     transition-duration: 300ms;
 }
@@ -69,6 +71,8 @@ var UDUR = '300ms';
 var map;
 
 $(function () {
+    var RANDOM_HUE_PERCENT = 1;
+
     map = new Map();
     var up = function () {
 
@@ -84,7 +88,7 @@ $(function () {
 
         circle.left();
         map.up();
-        map.some(50, 'randomHue');
+        map.some(RANDOM_HUE_PERCENT, 'randomHue');
         indicator.forward();
 
     };
@@ -92,7 +96,7 @@ $(function () {
 
         circle.right();
         map.up();
-        map.some(50, 'randomHue');
+        map.some(RANDOM_HUE_PERCENT, 'randomHue');
         indicator.forward();
 
     };
@@ -105,7 +109,7 @@ var Map = (function () {
     var exports = function () {
         this.rows = [0, 1, 2].map(function (x) {
             return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (y) {
-                var w = new Wanderer(x, y, Color.black().hue(dice(360)).saturation(100).light(50).alpha(0.6));
+                var w = new Wanderer(x, y, Color.black().hue(dice(30)).saturation(90 + dice(10)).light(50).alpha(0.6));
                 w.element().prependTo(document.body);
                 return w;
             });
@@ -144,10 +148,6 @@ var Map = (function () {
     return exports;
 
 }());
-
-var dice = function (n) {
-    return Math.floor(Math.random() * n);
-};
 
 var Wanderer = (function () {
     var exports = function (x, y, color) {
@@ -204,84 +204,30 @@ var Wanderer = (function () {
     return exports;
 }());
 
-var Color = (function () {
-    var exports = function (h, s, l, a) {
-        this.h = h;
-        this.s = s;
-        this.l = l;
-        this.a = a;
-    };
-
-    var colorPrototype = exports.prototype;
-
-    exports.random = function () {
-        return new exports(dice(360), dice(100), dice(100), Math.random());
-    };
-
-    exports.black = function () {
-        return new exports(0, 0, 0, 1);
-    };
-
-    colorPrototype.alpha = function (a) { this.a = a; return this; };
-    colorPrototype.hue = function (h) { this.h = h; return this; };
-    colorPrototype.saturation = function (s) { this.s = s; return this; };
-    colorPrototype.light = function (l) { this.l = l; return this; };
-
-    colorPrototype.css = function () {
-        return 'hsla(' + this.h + ',' + this.s + '%,' + this.l + '%,' + this.a + ')';
-    };
-
-    return exports;
-}());
-
 var circle = {
     x: 1,
     y: 1,
-    up: function () {
-        this.x += 2;
+    up: function () { this.move(2, 0); },
+    down: function () { this.move(1, 0); },
+    left: function () { this.move(0, 2); },
+    right: function () { this.move(0, 1); },
+    move: function (x, y) {
+        this.x += x;
         this.x %= 3;
-        $('.circle').css('top', this.x * UNIT + 'px')
-    },
-    down: function () {
-        this.x += 1;
-        this.x %= 3;
-        $('.circle').css('top', this.x * UNIT + 'px')
-    },
-    left: function () {
-        this.y += 2;
+        this.y += y;
         this.y %= 3;
+        $('.circle').css('top', this.x * UNIT + 'px')
         $('.circle').css('left', this.y * UNIT + 'px')
-    },
-    right: function () {
-        this.y += 1;
-        this.y %= 3;
-        $('.circle').css('left', this.y * UNIT + 'px')
-    },
+    }
 };
 
 var indicator = {
-    z: 0,
+    x: 0,
     forward: function () {
-        this.z += 4;
-        this.z %= 3 * UNIT;
-        $('.indicator').css('height', this.z + 'px');
+        this.x += 4;
+        this.x %= 3 * UNIT;
+        $('.indicator').css('width', this.x + 'px');
     },
-};
-
-var bindEvents = function (up, down, left, right) {
-
-    $('.wrapper').swipeCross()
-    .on('swipeup', function () { console.log('swipeup'); up();})
-    .on('swiperight', function () { console.log('swiperight'); right(); })
-    .on('swipeleft', function () { console.log('swipeleft'); left(); })
-    .on('swipedown', function () { console.log('swipedown'); down(); })
-    .on('swipecancel', function () { console.log('swipecancel'); });
-
-    $(document).arrowkeys()
-    .on('upkey', function () { console.log('upkey'); up();})
-    .on('rightkey', function () { console.log('rightkey'); right(); })
-    .on('leftkey', function () { console.log('leftkey'); left(); })
-    .on('downkey', function () { console.log('downkey'); down(); })
 };
 
 </script>
