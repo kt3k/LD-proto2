@@ -6,3 +6,4 @@
 - [#4](http://kt3k.github.io/LD-proto/s/4.html)
 - [#5](http://kt3k.github.io/LD-proto/s/5.html)
 - [#6](http://kt3k.github.io/LD-proto/s/6.html)
+- [#7](http://kt3k.github.io/LD-proto/s/7.html)
