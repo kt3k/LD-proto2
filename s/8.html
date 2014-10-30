@@ -1,0 +1,270 @@
+<html>
+<title>LD-proto</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/swipe-event/swipe-event.js"></script>
+<script src="../bower_components/swipe-event/swipe-cross.js"></script>
+<script src="../bower_components/arrowkeys/arrowkeys.js"></script>
+<script src="../js/util.js"></script>
+<script src="../js/color.js"></script>
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    position: relative;
+}
+
+.indicator {
+    position: absolute;
+    height: 303px;
+    width: 1px;
+    background-color: rgba(255,0,0,.2);
+    transition-duration: 300ms;
+}
+
+.circle {
+    position: absolute;
+    left: 101px;
+    top: 101px;
+    transition-duration: 300ms;
+}
+
+.container {
+}
+
+.cell {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-right: solid 1px rgba(0,0,0,0.5);
+    border-bottom: solid 1px rgba(0,0,0,0.5);
+    float: left;
+}
+
+.row {
+    position: relative;
+    clear: both;
+}
+
+.wrapper {
+    position: absolute;
+    height: 303px;
+    width: 303px;
+    left: 0px;
+    top: 0px;
+}
+
+
+
+</style>
+
+<script>
+
+var UNIT = 101;
+
+var UDUR = '300ms';
+
+var map;
+
+$(function () {
+    var RANDOM_HUE_PERCENT = 1;
+
+    map = new Map();
+    var up = function () {
+
+        circle.up();
+
+    };
+    var down = function () {
+
+        circle.down();
+
+    };
+    var left = function () {
+
+        circle.left();
+        map.up();
+        map.some(RANDOM_HUE_PERCENT, 'randomHue');
+        indicator.forward();
+
+    };
+    var right = function () {
+
+        circle.right();
+        map.up();
+        map.some(RANDOM_HUE_PERCENT, 'randomHue');
+        indicator.forward();
+
+    };
+
+    bindEvents(up, down, left, right);
+});
+
+var Map = (function () {
+
+    var exports = function () {
+        this.rows = [0, 1, 2].map(function (x) {
+            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (y) {
+                var w = new Wanderer(x, y, Color.black().hue(dice(30) + 150).saturation(90 + dice(10)).light(50).alpha(0.6));
+                w.element().prependTo(document.body);
+                return w;
+            });
+        });
+    };
+
+    var mapPrototype = exports.prototype;
+
+    mapPrototype.all = function (command, args) {
+
+        this.rows.forEach(function (row) {
+            row.forEach(function (cell) {
+                cell[command].apply(cell, args);
+            });
+        });
+
+    };
+
+    mapPrototype.some = function (percent, command, args) {
+
+        this.rows.forEach(function (row) {
+            row.forEach(function (cell) {
+                if (Math.random() < percent / 100) {
+                    cell[command].apply(cell, args);
+                }
+            });
+        });
+
+    };
+
+    mapPrototype.up = function () { this.all('up'); };
+    mapPrototype.down = function () { this.all('down'); };
+    mapPrototype.right = function () { this.all('right'); };
+    mapPrototype.left = function () { this.all('left'); };
+
+    return exports;
+
+}());
+
+var Wanderer = (function () {
+    var exports = function (x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.$dom = $('<div />').css({
+            'position': 'absolute',
+            'background-color': this.color.css(),
+            'width': '51px',
+            'height': '51px',
+            'transition-duration': UDUR,
+            'transition-delay': UDUR,
+            'border-radius': '25px'
+        });
+
+        this.locate();
+    };
+
+    var wPrototype = exports.prototype;
+
+    wPrototype.element = function () {
+        return this.$dom;
+    };
+
+    wPrototype.locate = function () {
+        this.$dom.css({
+            'top': UNIT * this.y + 25 + 'px',
+            'left': UNIT * this.x + 25 + 'px',
+        });
+    };
+
+    wPrototype.move = function (x, y) {
+        this.x += x;
+        this.x %= 3;
+        this.y += y;
+        this.y %= 11;
+
+        this.locate();
+    };
+
+    wPrototype.up = function () { this.move(0, 10); };
+    wPrototype.down = function () { this.move(0, 1); };
+    wPrototype.left = function () { this.move(2, 0); };
+    wPrototype.right = function () { this.move(1, 0); };
+    wPrototype.random = function () {
+        this[['up', 'down', 'left', 'right'][dice(4)]]();
+    };
+
+    wPrototype.randomHue = function () {
+        this.color.hue(dice(360));
+        this.$dom.css('background-color', this.color.css());
+    };
+
+    return exports;
+}());
+
+var circle = {
+    x: 1,
+    y: 1,
+    up: function () { this.move(2, 0); },
+    down: function () { this.move(1, 0); },
+    left: function () { this.move(0, 2); },
+    right: function () { this.move(0, 1); },
+    move: function (x, y) {
+        this.x += x;
+        this.x %= 3;
+        this.y += y;
+        this.y %= 3;
+        $('.circle').css('top', this.x * UNIT + 'px')
+        $('.circle').css('left', this.y * UNIT + 'px')
+    }
+};
+
+var indicator = {
+    x: 0,
+    forward: function () {
+        this.x += 4;
+        this.x %= 3 * UNIT;
+        $('.indicator').css('width', this.x + 'px');
+    },
+};
+
+</script>
+
+<body bgcolor="#cfc">
+
+<div class="indicator"></div>
+
+<div class="container">
+
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+<div class="row"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+
+</div>
+
+<div class="circle">
+<svg class="" width="100" height="100">
+   <circle cx="50" cy="50" r="49" stroke="rgba(0,0,0,0.5)" stroke-width="1" fill="rgba(0,0,0,0.3)" />
+</svg>
+</div>
+
+
+<div class="wrapper"></div>
+
+</body>
+</html>
