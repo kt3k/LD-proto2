@@ -93,8 +93,9 @@ $(function () {
     var RANDOM_HUE_PERCENT = 1;
 
     var map = new Map();
+    var box = new EvalBox();
 
-    var bms = new BallMoveMobLeaveService(ball, map);
+    var bms = new BallMoveMobLeaveService(ball, map, box);
     var up = function () {
 
         bms.up();
@@ -129,9 +130,10 @@ $(function () {
 var BallMoveMobLeaveService = (function () {
     'use strict';
 
-    var exports = function (ball, wanderers) {
+    var exports = function (ball, wanderers, box) {
         this.ball = ball;
         this.mobs = new Mobs(wanderers);
+        this.box = box;
     };
 
     var bmsPrototype = exports.prototype;
@@ -144,7 +146,9 @@ var BallMoveMobLeaveService = (function () {
         // pos.y y-coordinate
         var pos = this.ball.pos();
 
-        this.mobs.leave(pos);
+        var w = this.mobs.leave(pos);
+
+        this.box.push(w);
     };
 
     bmsPrototype.up = function () { this.move('up'); };
@@ -164,11 +168,67 @@ var BallMoveMobLeaveService = (function () {
 
         w = w[0];
 
-        w.element().css('left', LEFT + 3 * UNIT + 25 + 'px');
-
         this.wanderers.selectRange(pos).forEach(function (cell) {
             cell.up();
         });
+
+        return w;
+    };
+
+    return exports;
+
+}());
+
+var EvalBox = (function () {
+    'use strict';
+
+    var exports = function () {
+    };
+
+    var boxPrototype = exports.prototype;
+
+    boxPrototype.push = function (wanderer) {
+        if (this.left == null) {
+
+            this.setLeft(wanderer);
+
+            return;
+        };
+
+        this.setRight(wanderer);
+
+        goodbye(this.left, this.right);
+
+        delete this.left;
+        delete this.right;
+
+    };
+
+    var goodbye = function (left, right) {
+        setTimeout(function () {
+            left.$dom.css('background-color', 'rgba(0,0,0,0)');
+            right.$dom.css('background-color', 'rgba(0,0,0,0)');
+        }, 500);
+    };
+
+    boxPrototype.involve = function (wanderer) {
+        wanderer.setMetrics(30, 90, UNIT, 5, 5);
+    };
+
+    boxPrototype.setLeft = function (wanderer) {
+        this.involve(wanderer);
+        wanderer.x = 0;
+        wanderer.y = 0;
+        wanderer.locate();
+        this.left = wanderer;
+    };
+
+    boxPrototype.setRight = function (wanderer) {
+        this.involve(wanderer);
+        wanderer.x = 1;
+        wanderer.y = 0;
+        wanderer.locate();
+        this.right = wanderer;
     };
 
     return exports;
@@ -182,7 +242,7 @@ var Map = (function () {
         var cells = this.cells = [];
 
         this.rows = [0, 1, 2].map(function (x) {
-            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (y) {
+            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(function (y) {
                 var w = Wanderer.planA(x, y);
                 w.element().prependTo(document.body);
 
@@ -247,11 +307,7 @@ var Wanderer = (function () {
         this.x = x;
         this.y = y;
         this.color = color;
-        this.top = top;
-        this.left = left;
-        this.unit = unit;
-        this.wrapX = wrapX;
-        this.wrapY = wrapY;
+        this.setMetrics(top, left, unit, wrapX, wrapY);
         this.$dom = $('<div />').css({
             'position': 'absolute',
             'background-color': this.color.css(),
@@ -281,6 +337,14 @@ var Wanderer = (function () {
 
     wPrototype.element = function () {
         return this.$dom;
+    };
+
+    wPrototype.setMetrics = function (top, left, unit, wrapX, wrapY) {
+        this.top = top;
+        this.left = left;
+        this.unit = unit;
+        this.wrapX = wrapX;
+        this.wrapY = wrapY;
     };
 
     wPrototype.locate = function () {
@@ -343,7 +407,7 @@ var ball = {
 var indicator = {
     x: 0,
     forward: function () {
-        this.x += 303/33;
+        this.x += 303/36;
         this.x %= 3 * UNIT + 1;
         $('.indicator').css('width', Math.floor(this.x) + 'px');
     },
