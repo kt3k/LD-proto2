@@ -20,7 +20,7 @@ body {
 
 .indicator {
     position: absolute;
-    top: 30px;
+    top: 130px;
     left: 30px;
     height: 303px;
     width: 1px;
@@ -31,14 +31,14 @@ body {
 .circle {
     position: absolute;
     left: 131px;
-    top: 131px;
+    top: 231px;
     transition-duration: 300ms;
 }
 
 .container {
     position: absolute;
     left: 29px;
-    top: 29px;
+    top: 129px;
 }
 
 .row {
@@ -72,7 +72,7 @@ body {
     height: 303px;
     width: 303px;
     left: 30px;
-    top: 30px;
+    top: 130px;
 }
 
 
@@ -82,7 +82,7 @@ body {
 <script>
 
 var LEFT = 30;
-var TOP = 30;
+var TOP = 130;
 var UNIT = 101;
 
 var UDUR = '300ms';
@@ -243,10 +243,15 @@ var Map = (function () {
 var Wanderer = (function () {
     'use strict';
 
-    var exports = function (x, y, color) {
+    var exports = function (x, y, color, top, left, unit, wrapX, wrapY) {
         this.x = x;
         this.y = y;
         this.color = color;
+        this.top = top;
+        this.left = left;
+        this.unit = unit;
+        this.wrapX = wrapX;
+        this.wrapY = wrapY;
         this.$dom = $('<div />').css({
             'position': 'absolute',
             'background-color': this.color.css(),
@@ -260,7 +265,16 @@ var Wanderer = (function () {
     };
 
     exports.planA = function (x, y) {
-        return new exports(x, y, Color.black().hue(dice(20) + [0, 210][dice(2)]).saturation(90 + dice(10)).light(50).alpha(0.7));
+        return new exports(
+            x,
+            y,
+            Color.black().hue(dice(20) + [0, 210][dice(2)]).saturation(90 + dice(10)).light(50).alpha(0.7),
+            TOP,
+            LEFT,
+            UNIT,
+            3,
+            11
+        );
     };
 
     var wPrototype = exports.prototype;
@@ -271,16 +285,16 @@ var Wanderer = (function () {
 
     wPrototype.locate = function () {
         this.$dom.css({
-            'top': TOP + UNIT * this.y + 25 + 'px',
-            'left': LEFT + UNIT * this.x + 25 + 'px',
+            'top': this.top + this.unit * this.y + 25 + 'px',
+            'left': this.left+ this.unit * this.x + 25 + 'px',
         });
     };
 
     wPrototype.move = function (x, y) {
         this.x += x;
-        this.x %= 3;
+        this.x %= this.wrapX;
         this.y += y;
-        this.y %= 11;
+        this.y %= this.wrapY;
 
         this.locate();
     };
