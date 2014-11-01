@@ -329,9 +329,9 @@ var ball = {
 var indicator = {
     x: 0,
     forward: function () {
-        this.x += 4;
-        this.x %= 3 * UNIT;
-        $('.indicator').css('width', this.x + 'px');
+        this.x += 303/33;
+        this.x %= 3 * UNIT + 1;
+        $('.indicator').css('width', Math.floor(this.x) + 'px');
     },
 };
 
