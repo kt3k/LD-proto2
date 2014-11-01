@@ -1,0 +1,376 @@
+<html>
+<title>LD-proto</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/swipe-event/swipe-event.js"></script>
+<script src="../bower_components/swipe-event/swipe-cross.js"></script>
+<script src="../bower_components/arrowkeys/arrowkeys.js"></script>
+<script src="../js/util.js"></script>
+<script src="../js/color.js"></script>
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    position: relative;
+}
+
+.indicator {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    height: 303px;
+    width: 1px;
+    background-color: rgba(255,0,0,.2);
+    transition-duration: 300ms;
+}
+
+.circle {
+    position: absolute;
+    left: 131px;
+    top: 131px;
+    transition-duration: 300ms;
+}
+
+.container {
+    position: absolute;
+    left: 29px;
+    top: 29px;
+}
+
+.row {
+    position: absolute;
+}
+
+.cell {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-right: solid 1px rgba(0,0,0,0.5);
+    border-bottom: solid 1px rgba(0,0,0,0.5);
+    float: left;
+}
+
+.cell.border-top {
+    border-top: solid 1px rgba(0,0,0,0.5);
+}
+
+.cell.border-left {
+    border-left: solid 1px rgba(0,0,0,0.5);
+}
+
+.row {
+    position: relative;
+    clear: both;
+}
+
+.wrapper {
+    position: absolute;
+    height: 303px;
+    width: 303px;
+    left: 30px;
+    top: 30px;
+}
+
+
+
+</style>
+
+<script>
+
+var LEFT = 30;
+var TOP = 30;
+var UNIT = 101;
+
+var UDUR = '300ms';
+
+var map;
+
+$(function () {
+    var RANDOM_HUE_PERCENT = 1;
+
+    var map = new Map();
+
+    var bms = new BallMoveMobLeaveService(ball, map);
+    var up = function () {
+
+        bms.up();
+        indicator.forward();
+
+    };
+    var down = function () {
+
+        bms.down();
+        indicator.forward();
+
+    };
+    var left = function () {
+
+        bms.left();
+        indicator.forward();
+
+    };
+    var right = function () {
+
+        bms.right();
+        indicator.forward();
+
+    };
+
+    var command = function () {
+    };
+
+    bindEvents(up, down, left, right, command);
+});
+
+var BallMoveMobLeaveService = (function () {
+    'use strict';
+
+    var exports = function (ball, wanderers) {
+        this.ball = ball;
+        this.mobs = new Mobs(wanderers);
+    };
+
+    var bmsPrototype = exports.prototype;
+
+    bmsPrototype.move = function (dir) {
+        this.ball[dir]();
+
+        // position interface
+        // pos.x x-coordinate
+        // pos.y y-coordinate
+        var pos = this.ball.pos();
+
+        this.mobs.leave(pos);
+    };
+
+    bmsPrototype.up = function () { this.move('up'); };
+    bmsPrototype.down = function () { this.move('down'); };
+    bmsPrototype.right = function () { this.move('right'); };
+    bmsPrototype.left = function () { this.move('left'); };
+
+    var Mobs = function (wanderers) {
+        this.wanderers = wanderers;
+    };
+
+    var mobsPrototype = Mobs.prototype;
+
+    mobsPrototype.leave = function (pos) {
+        var w = this.wanderers.select(pos);
+        this.wanderers.filter(w);
+
+        w = w[0];
+
+        w.element().css('left', LEFT + 3 * UNIT + 25 + 'px');
+
+        this.wanderers.selectRange(pos).forEach(function (cell) {
+            cell.up();
+        });
+    };
+
+    return exports;
+
+}());
+
+var Map = (function () {
+    'use strict';
+
+    var exports = function () {
+        var cells = this.cells = [];
+
+        this.rows = [0, 1, 2].map(function (x) {
+            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (y) {
+                var w = Wanderer.planA(x, y);
+                w.element().prependTo(document.body);
+
+                cells.push(w);
+
+                return w;
+            });
+        });
+    };
+
+    var mapPrototype = exports.prototype;
+
+    mapPrototype.commandAll = function (command, args) {
+
+        this.cells.forEach(function (cell) {
+            cell[command](args);
+        });
+
+    };
+
+    mapPrototype.some = function (percent, command, args) {
+
+        this.cells.forEach(function (cell) {
+            if (Math.random() < percent / 100) {
+                cell[command].apply(cell, args);
+            }
+        });
+
+    };
+
+    mapPrototype.allUp = function () { this.commandAll('up'); };
+    mapPrototype.allDown = function () { this.commandAll('down'); };
+    mapPrototype.allRight = function () { this.commandAll('right'); };
+    mapPrototype.allLeft = function () { this.commandAll('left'); };
+
+    mapPrototype.select = function (pos) {
+        return this.cells.filter(function (cell) {
+            return cell.x === pos.x && cell.y === pos.y;
+        });
+    };
+
+    mapPrototype.selectRange = function (pos) {
+        return this.cells.filter(function (cell) {
+            return cell.x === pos.x && cell.y > pos.y;
+        });
+    };
+
+    mapPrototype.filter = function (cells) {
+        this.cells = this.cells.filter(function (cell) {
+            return cells.indexOf(cell) < 0;
+        });
+    };
+
+    return exports;
+
+}());
+
+var Wanderer = (function () {
+    'use strict';
+
+    var exports = function (x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.$dom = $('<div />').css({
+            'position': 'absolute',
+            'background-color': this.color.css(),
+            'width': '51px',
+            'height': '51px',
+            'transition-duration': UDUR,
+            'border-radius': '25px'
+        });
+
+        this.locate();
+    };
+
+    exports.planA = function (x, y) {
+        return new exports(x, y, Color.black().hue(dice(20) + [0, 210][dice(2)]).saturation(90 + dice(10)).light(50).alpha(0.7));
+    };
+
+    var wPrototype = exports.prototype;
+
+    wPrototype.element = function () {
+        return this.$dom;
+    };
+
+    wPrototype.locate = function () {
+        this.$dom.css({
+            'top': TOP + UNIT * this.y + 25 + 'px',
+            'left': LEFT + UNIT * this.x + 25 + 'px',
+        });
+    };
+
+    wPrototype.move = function (x, y) {
+        this.x += x;
+        this.x %= 3;
+        this.y += y;
+        this.y %= 11;
+
+        this.locate();
+    };
+
+    wPrototype.up = function () { this.move(0, 10); };
+    wPrototype.down = function () { this.move(0, 1); };
+    wPrototype.left = function () { this.move(2, 0); };
+    wPrototype.right = function () { this.move(1, 0); };
+
+    wPrototype.random = function () {
+        this[['up', 'down', 'left', 'right'][dice(4)]]();
+    };
+
+    wPrototype.randomHue = function () {
+        this.color.hue(dice(360));
+        this.$dom.css('background-color', this.color.css());
+    };
+
+    return exports;
+}());
+
+
+var ball = {
+    x: 1,
+    y: 1,
+    up: function () { this.move(0, 2); },
+    down: function () { this.move(0, 1); },
+    left: function () { this.move(2, 0); },
+    right: function () { this.move(1, 0); },
+    pos: function () {
+        return {x: this.x, y: this.y};
+    },
+    move: function (x, y) {
+        console.log('ball move');
+        this.x += x;
+        this.x %= 3;
+        this.y += y;
+        this.y %= 3;
+
+        $('.circle')
+            .css('top', TOP + this.y * UNIT + 'px')
+            .css('left', LEFT + this.x * UNIT + 'px');
+    }
+};
+
+var indicator = {
+    x: 0,
+    forward: function () {
+        this.x += 4;
+        this.x %= 3 * UNIT;
+        $('.indicator').css('width', this.x + 'px');
+    },
+};
+
+</script>
+
+<body bgcolor="#cfc">
+
+<div class="indicator"></div>
+
+<div class="container">
+
+<div class="row">
+  <div class="cell border-top border-left"></div>
+  <div class="cell border-top"></div>
+  <div class="cell border-top"></div>
+</div>
+<div class="row">
+  <div class="cell border-left"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+<div class="row">
+  <div class="cell border-left"></div>
+  <div class="cell"></div>
+  <div class="cell"></div>
+</div>
+
+</div>
+
+<div class="circle">
+<svg class="" width="100" height="100">
+   <circle cx="50" cy="50" r="49" stroke="rgba(0,0,0,0.5)" stroke-width="1" fill="rgba(0,0,0,0.3)" />
+</svg>
+</div>
+
+
+<div class="wrapper"></div>
+
+
+
+</body>
+</html>
