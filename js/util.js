@@ -3,6 +3,10 @@ var dice = function (n) {
     return Math.floor(Math.random() * n);
 };
 
+var coinToss = function () { return dice(2); };
+
+var sample = function (array) { return arguments[dice(arguments.length)]; };
+
 var bindEvents = function (up, down, left, right, command) {
 
     $('.wrapper')

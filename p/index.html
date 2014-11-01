@@ -197,36 +197,71 @@ var EvalBox = (function () {
 
         this.setRight(wanderer);
 
-        goodbye(this.left, this.right);
+        evaluate(this.left, this.right);
 
         delete this.left;
         delete this.right;
 
     };
 
-    var goodbye = function (left, right) {
+    var evaluate = function (left, right) {
+        if (left.gender === right.gender) {
+
+            apart(left, right, 300);
+            goodbye(left, right, 800);
+
+            return;
+        }
+
+        close(left, right, 300);
+        goodbye(left, right, 800);
+
+    };
+
+    var apart = function (a, b, delay) {
+
+        setTimeout(function () {
+            a.left();
+            b.right();
+        }, delay);
+
+    };
+
+    var close = function (a, b, delay) {
+
+        setTimeout(function () {
+            a.right();
+            b.left();
+
+            a.up();
+            b.up();
+        }, delay);
+
+    };
+
+    var goodbye = function (left, right, delay) {
         setTimeout(function () {
             left.$dom.css('background-color', 'rgba(0,0,0,0)');
             right.$dom.css('background-color', 'rgba(0,0,0,0)');
-        }, 500);
+        }, delay);
     };
 
     boxPrototype.involve = function (wanderer) {
-        wanderer.setMetrics(30, 90, UNIT, 5, 5);
+        wanderer.setMetrics(-20, 40, UNIT / 2, 5, 5);
     };
 
     boxPrototype.setLeft = function (wanderer) {
         this.involve(wanderer);
-        wanderer.x = 0;
-        wanderer.y = 0;
+        wanderer.x = 1;
+        wanderer.y = 1;
         wanderer.locate();
         this.left = wanderer;
     };
 
     boxPrototype.setRight = function (wanderer) {
         this.involve(wanderer);
-        wanderer.x = 1;
-        wanderer.y = 0;
+        wanderer.x = 3;
+        wanderer.y = 1;
         wanderer.locate();
         this.right = wanderer;
     };
@@ -303,34 +338,25 @@ var Map = (function () {
 var Wanderer = (function () {
     'use strict';
 
-    var exports = function (x, y, color, top, left, unit, wrapX, wrapY) {
+    var exports = function (x, y) {
         this.x = x;
         this.y = y;
-        this.color = color;
-        this.setMetrics(top, left, unit, wrapX, wrapY);
         this.$dom = $('<div />').css({
             'position': 'absolute',
-            'background-color': this.color.css(),
             'width': '51px',
             'height': '51px',
             'transition-duration': UDUR,
             'border-radius': '25px'
         });
-
-        this.locate();
     };
 
     exports.planA = function (x, y) {
-        return new exports(
-            x,
-            y,
-            Color.black().hue(dice(20) + [0, 210][dice(2)]).saturation(90 + dice(10)).light(50).alpha(0.7),
-            TOP,
-            LEFT,
-            UNIT,
-            3,
-            11
-        );
+        var w = new exports(x, y)
+            .setGender(sample('f', 'm'))
+            .setMetrics(TOP, LEFT, UNIT, 3, 11);
+
+        w.locate();
+        return w;
     };
 
     var wPrototype = exports.prototype;
@@ -339,33 +365,63 @@ var Wanderer = (function () {
         return this.$dom;
     };
 
+    wPrototype.setGender = function (gender) {
+        this.gender = gender;
+
+        if (gender === 'm') {
+            this.setMaleColor();
+        } else if (gender === 'f') {
+            this.setFemaleColor();
+        }
+
+        return this;
+    };
+
+    wPrototype.setFemaleColor = function () {
+        this.setColor(Color.black().hue(dice(20)).saturation(90 + dice(10)).light(50).alpha(0.7))
+    };
+
+    wPrototype.setMaleColor = function () {
+        this.setColor(Color.black().hue(dice(20) + 210).saturation(90 + dice(10)).light(50).alpha(0.7))
+    };
+
+    wPrototype.setColor = function (color) {
+        this.color = color;
+
+        this.$dom.css('background-color', this.color.css());
+
+        return this;
+    };
+
     wPrototype.setMetrics = function (top, left, unit, wrapX, wrapY) {
-        this.top = top;
-        this.left = left;
+        this.offsetY = top;
+        this.offsetX = left;
         this.unit = unit;
         this.wrapX = wrapX;
         this.wrapY = wrapY;
+
+        return this;
     };
 
     wPrototype.locate = function () {
         this.$dom.css({
-            'top': this.top + this.unit * this.y + 25 + 'px',
-            'left': this.left+ this.unit * this.x + 25 + 'px',
+            'top': this.offsetY + this.unit * this.y + 25 + 'px',
+            'left': this.offsetX + this.unit * this.x + 25 + 'px',
         });
     };
 
     wPrototype.move = function (x, y) {
-        this.x += x;
+        this.x += this.wrapX + x;
         this.x %= this.wrapX;
-        this.y += y;
+        this.y += this.wrapY + y;
         this.y %= this.wrapY;
 
         this.locate();
     };
 
-    wPrototype.up = function () { this.move(0, 10); };
+    wPrototype.up = function () { this.move(0, -1); };
     wPrototype.down = function () { this.move(0, 1); };
-    wPrototype.left = function () { this.move(2, 0); };
+    wPrototype.left = function () { this.move(-1, 0); };
     wPrototype.right = function () { this.move(1, 0); };
 
     wPrototype.random = function () {
