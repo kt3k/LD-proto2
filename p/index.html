@@ -92,44 +92,102 @@ var map;
 $(function () {
     var RANDOM_HUE_PERCENT = 1;
 
-    map = new Map();
+    var map = new Map();
+
+    var bms = new BallMoveMobLeaveService(ball, map);
     var up = function () {
 
-        circle.up();
+        bms.up();
+        indicator.forward();
 
     };
     var down = function () {
 
-        circle.down();
+        bms.down();
+        indicator.forward();
 
     };
     var left = function () {
 
-        circle.left();
-        map.up();
-        map.some(RANDOM_HUE_PERCENT, 'randomHue');
+        bms.left();
         indicator.forward();
 
     };
     var right = function () {
 
-        circle.right();
-        map.up();
-        map.some(RANDOM_HUE_PERCENT, 'randomHue');
+        bms.right();
         indicator.forward();
 
     };
 
-    bindEvents(up, down, left, right);
+    var command = function () {
+    };
+
+    bindEvents(up, down, left, right, command);
 });
 
+var BallMoveMobLeaveService = (function () {
+    'use strict';
+
+    var exports = function (ball, wanderers) {
+        this.ball = ball;
+        this.mobs = new Mobs(wanderers);
+    };
+
+    var bmsPrototype = exports.prototype;
+
+    bmsPrototype.move = function (dir) {
+        this.ball[dir]();
+
+        // position interface
+        // pos.x x-coordinate
+        // pos.y y-coordinate
+        var pos = this.ball.pos();
+
+        this.mobs.leave(pos);
+    };
+
+    bmsPrototype.up = function () { this.move('up'); };
+    bmsPrototype.down = function () { this.move('down'); };
+    bmsPrototype.right = function () { this.move('right'); };
+    bmsPrototype.left = function () { this.move('left'); };
+
+    var Mobs = function (wanderers) {
+        this.wanderers = wanderers;
+    };
+
+    var mobsPrototype = Mobs.prototype;
+
+    mobsPrototype.leave = function (pos) {
+        var w = this.wanderers.select(pos);
+        this.wanderers.filter(w);
+
+        w = w[0];
+
+        w.element().css('left', LEFT + 3 * UNIT + 25 + 'px');
+
+        this.wanderers.selectRange(pos).forEach(function (cell) {
+            cell.up();
+        });
+    };
+
+    return exports;
+
+}());
+
 var Map = (function () {
+    'use strict';
 
     var exports = function () {
+        var cells = this.cells = [];
+
         this.rows = [0, 1, 2].map(function (x) {
             return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function (y) {
-                var w = new Wanderer(x, y, Color.black().hue(dice(30) + 150).saturation(90 + dice(10)).light(50).alpha(0.6));
+                var w = Wanderer.planA(x, y);
                 w.element().prependTo(document.body);
+
+                cells.push(w);
+
                 return w;
             });
         });
@@ -137,38 +195,54 @@ var Map = (function () {
 
     var mapPrototype = exports.prototype;
 
-    mapPrototype.all = function (command, args) {
+    mapPrototype.commandAll = function (command, args) {
 
-        this.rows.forEach(function (row) {
-            row.forEach(function (cell) {
-                cell[command].apply(cell, args);
-            });
+        this.cells.forEach(function (cell) {
+            cell[command](args);
         });
 
     };
 
     mapPrototype.some = function (percent, command, args) {
 
-        this.rows.forEach(function (row) {
-            row.forEach(function (cell) {
-                if (Math.random() < percent / 100) {
-                    cell[command].apply(cell, args);
-                }
-            });
+        this.cells.forEach(function (cell) {
+            if (Math.random() < percent / 100) {
+                cell[command].apply(cell, args);
+            }
         });
 
     };
 
-    mapPrototype.up = function () { this.all('up'); };
-    mapPrototype.down = function () { this.all('down'); };
-    mapPrototype.right = function () { this.all('right'); };
-    mapPrototype.left = function () { this.all('left'); };
+    mapPrototype.allUp = function () { this.commandAll('up'); };
+    mapPrototype.allDown = function () { this.commandAll('down'); };
+    mapPrototype.allRight = function () { this.commandAll('right'); };
+    mapPrototype.allLeft = function () { this.commandAll('left'); };
+
+    mapPrototype.select = function (pos) {
+        return this.cells.filter(function (cell) {
+            return cell.x === pos.x && cell.y === pos.y;
+        });
+    };
+
+    mapPrototype.selectRange = function (pos) {
+        return this.cells.filter(function (cell) {
+            return cell.x === pos.x && cell.y > pos.y;
+        });
+    };
+
+    mapPrototype.filter = function (cells) {
+        this.cells = this.cells.filter(function (cell) {
+            return cells.indexOf(cell) < 0;
+        });
+    };
 
     return exports;
 
 }());
 
 var Wanderer = (function () {
+    'use strict';
+
     var exports = function (x, y, color) {
         this.x = x;
         this.y = y;
@@ -179,11 +253,14 @@ var Wanderer = (function () {
             'width': '51px',
             'height': '51px',
             'transition-duration': UDUR,
-            'transition-delay': UDUR,
             'border-radius': '25px'
         });
 
         this.locate();
+    };
+
+    exports.planA = function (x, y) {
+        return new exports(x, y, Color.black().hue(dice(20) + [0, 210][dice(2)]).saturation(90 + dice(10)).light(50).alpha(0.7));
     };
 
     var wPrototype = exports.prototype;
@@ -212,6 +289,7 @@ var Wanderer = (function () {
     wPrototype.down = function () { this.move(0, 1); };
     wPrototype.left = function () { this.move(2, 0); };
     wPrototype.right = function () { this.move(1, 0); };
+
     wPrototype.random = function () {
         this[['up', 'down', 'left', 'right'][dice(4)]]();
     };
@@ -224,20 +302,27 @@ var Wanderer = (function () {
     return exports;
 }());
 
-var circle = {
+
+var ball = {
     x: 1,
     y: 1,
-    up: function () { this.move(2, 0); },
-    down: function () { this.move(1, 0); },
-    left: function () { this.move(0, 2); },
-    right: function () { this.move(0, 1); },
+    up: function () { this.move(0, 2); },
+    down: function () { this.move(0, 1); },
+    left: function () { this.move(2, 0); },
+    right: function () { this.move(1, 0); },
+    pos: function () {
+        return {x: this.x, y: this.y};
+    },
     move: function (x, y) {
+        console.log('ball move');
         this.x += x;
         this.x %= 3;
         this.y += y;
         this.y %= 3;
-        $('.circle').css('top', TOP + this.x * UNIT + 'px')
-        $('.circle').css('left', LEFT + this.y * UNIT + 'px')
+
+        $('.circle')
+            .css('top', TOP + this.y * UNIT + 'px')
+            .css('left', LEFT + this.x * UNIT + 'px');
     }
 };
 
@@ -284,6 +369,8 @@ var indicator = {
 
 
 <div class="wrapper"></div>
+
+
 
 </body>
 </html>
