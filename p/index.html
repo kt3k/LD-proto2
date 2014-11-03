@@ -23,8 +23,8 @@ body {
     position: absolute;
     top: 130px;
     left: 30px;
-    height: 303px;
-    width: 1px;
+    height: 253px;
+    width: 0px;
     background-color: rgba(255,0,0,.2);
     transition-duration: 300ms;
 }
@@ -75,6 +75,11 @@ body {
     left: 30px;
     top: 130px;
 }
+
+.round-top-right { border-top-right-radius: 45px; }
+.round-top-left{ border-top-left-radius: 45px; }
+.round-bottom-right { border-bottom-right-radius: 45px; }
+.round-bottom-left{ border-bottom-left-radius: 45px; }
 
 
 
@@ -463,10 +468,15 @@ var ball = {
 
 var indicator = {
     x: 0,
+    y: 250,
     forward: function () {
         this.x += 303/36;
         this.x %= 3 * UNIT + 1;
+        this.y += 303/36;
+        if (this.y >= 303) { this.y = 303; }
+
         $('.indicator').css('width', Math.floor(this.x) + 'px');
+        $('.indicator').css('height', Math.floor(this.y) + 'px');
     },
 };
 
@@ -474,14 +484,14 @@ var indicator = {
 
 <body>
 
-<div class="indicator"></div>
+<div class="indicator round-bottom-left round-top-right"></div>
 
 <div class="container">
 
 <div class="row">
   <div class="cell border-top border-left"></div>
   <div class="cell border-top"></div>
-  <div class="cell border-top"></div>
+  <div class="cell border-top round-top-right"></div>
 </div>
 <div class="row">
   <div class="cell border-left"></div>
@@ -489,7 +499,7 @@ var indicator = {
   <div class="cell"></div>
 </div>
 <div class="row">
-  <div class="cell border-left"></div>
+  <div class="cell border-left round-bottom-left"></div>
   <div class="cell"></div>
   <div class="cell"></div>
 </div>
@@ -497,18 +507,15 @@ var indicator = {
 </div>
 
 <div class="circle">
-<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
-    <!-- Generator: Sketch 3.1.1 (8761) - http://www.bohemiancoding.com/sketch -->
-    <title>ball 2</title>
-    <desc>Created with Sketch.</desc>
+<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <defs>
         <radialGradient cx="50%" cy="19.2432876%" fx="50%" fy="19.2432876%" r="80.7567124%" id="radialGradient-1">
             <stop stop-color="#000000" stop-opacity="0" offset="0%"></stop>
-            <stop stop-color="#000000" stop-opacity="1" offset="100%"></stop>
+            <stop stop-color="#000000" stop-opacity="0.7" offset="100%"></stop>
         </radialGradient>
     </defs>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
-        <path d="M50.2626953,0.265625 C80,0.265625 100.300781,20.5 100.300781,50.25 C100.300781,80 81.0898438,100.178711 50.5449219,100.178711 C20,100.178711 0.321289062,79.7558594 0.321289062,49.8779297 C0.321289062,20 20.5253906,0.265625 50.2626953,0.265625 Z" id="Path-1" stroke-opacity="0.4" stroke="#000000" fill="url(#radialGradient-1)" sketch:type="MSShapeGroup"></path>
+    <g id="Page-1" stroke="none" stroke-width="2" fill="none" fill-rule="evenodd">
+        <path d="M50.2626953,0.265625 C80,0.265625 100.300781,20.5 100.300781,50.25 C100.300781,80 81.0898438,100.178711 50.5449219,100.178711 C20,100.178711 0.321289062,79.7558594 0.321289062,49.8779297 C0.321289062,20 20.5253906,0.265625 50.2626953,0.265625 Z" id="Path-1" stroke-opacity="0.4" stroke="#000000" fill="url(#radialGradient-1)"></path>
     </g>
 </svg>
 </div>
