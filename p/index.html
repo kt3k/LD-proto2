@@ -92,7 +92,10 @@ var LEFT = 30;
 var TOP = 130;
 var UNIT = 101;
 
-var UDUR = '300ms';
+var NUDUR = 300;
+var SUDUR = NUDUR + 'ms';
+
+var UDUR = NUDUR + 'ms';
 
 $(function () {
     var map = new Map();
@@ -102,28 +105,46 @@ $(function () {
 
     var up = function () {
 
-        bms.up();
-        indicator.forward();
+        var success = bms.up();
+
+        if (success) {
+            onMoveSuccess();
+        }
 
     };
 
     var down = function () {
 
-        bms.down();
-        indicator.forward();
+        var success = bms.down();
+
+        if (success) {
+            onMoveSuccess();
+        }
 
     };
 
     var left = function () {
 
-        bms.left();
-        indicator.forward();
+        var success = bms.left();
+
+        if (success) {
+            onMoveSuccess();
+        }
 
     };
 
     var right = function () {
 
-        bms.right();
+        var success = bms.right();
+
+        if (success) {
+            onMoveSuccess();
+        }
+
+    };
+
+    var onMoveSuccess = function () {
+
         indicator.forward();
 
     };
@@ -146,16 +167,26 @@ var BallMoveMobLeaveService = (function () {
     var bmsPrototype = exports.prototype;
 
     bmsPrototype.move = function (dir) {
-        this.ball[dir]();
 
         // position interface
         // pos.x x-coordinate
         // pos.y y-coordinate
-        var pos = this.ball.pos();
+        var pos = this.ball.posAhead(dir);
+
+        if (this.mobs.find(pos) == null) {
+
+            this.ball.refuseToMove();
+
+            return false;
+        }
+
+        this.ball[dir]();
 
         var w = this.mobs.leave(pos);
 
         this.box.push(w);
+
+        return true;
     };
 
     bmsPrototype.up = function () { this.move('up'); };
@@ -180,6 +211,10 @@ var BallMoveMobLeaveService = (function () {
         });
 
         return w;
+    };
+
+    mobsPrototype.find = function (pos) {
+        return this.wanderers.find(pos);
     };
 
     return exports;
@@ -338,6 +373,16 @@ var Map = (function () {
         });
     };
 
+    mapPrototype.find = function (pos) {
+        var cand = this.select(pos);
+
+        if (cand.length === 0) {
+            return null;
+        }
+
+        return cand[0];
+    };
+
     mapPrototype.selectRange = function (pos) {
         return this.cells.filter(function (cell) {
             return cell.x === pos.x && cell.y > pos.y;
@@ -466,24 +511,52 @@ var Wanderer = (function () {
 var ball = {
     x: 1,
     y: 1,
+    MAX: 3,
+
     up: function () { this.move(0, 2); },
     down: function () { this.move(0, 1); },
     left: function () { this.move(2, 0); },
     right: function () { this.move(1, 0); },
+
     pos: function () {
         return {x: this.x, y: this.y};
     },
+
+    posAhead: function (dir) {
+        var x, y;
+        switch (dir) {
+            case 'up': x = this.x + 0; y = this.y + 2; break
+            case 'down': x = this.x + 0; y = this.y + 1; break
+            case 'left': x = this.x + 2; y = this.y + 0; break
+            case 'right': x = this.x + 1; y = this.y + 0; break
+        }
+        return {x: x % this.MAX, y: y % this.MAX};
+    },
+
     move: function (x, y) {
         console.log('ball move');
         this.x += x;
-        this.x %= 3;
+        this.x %= this.MAX;
         this.y += y;
-        this.y %= 3;
+        this.y %= this.MAX;
 
-        $('.circle')
+        this.getDom()
             .css('top', TOP + this.y * UNIT + 'px')
             .css('left', LEFT + this.x * UNIT + 'px');
-    }
+    },
+
+    refuseToMove: function () {
+        var that = this;
+        that.getDom().css('transform', 'scale(1.3)');
+
+        setTimeout(function () {
+            that.getDom().css('transform', 'scale(1)');
+        }, NUDUR);
+    },
+
+    getDom: function () {
+        return $('.circle');
+    },
 };
 
 var indicator = {
@@ -561,9 +634,7 @@ var PointBox = {
             <stop stop-color="#000000" stop-opacity="0.7" offset="100%"></stop>
         </radialGradient>
     </defs>
-    <g id="Page-1" stroke="none" stroke-width="2" fill="none" fill-rule="evenodd">
-        <path d="M50.2626953,0.265625 C80,0.265625 100.300781,20.5 100.300781,50.25 C100.300781,80 81.0898438,100.178711 50.5449219,100.178711 C20,100.178711 0.321289062,79.7558594 0.321289062,49.8779297 C0.321289062,20 20.5253906,0.265625 50.2626953,0.265625 Z" id="Path-1" stroke-opacity="0.4" stroke="#000000" fill="url(#radialGradient-1)"></path>
-    </g>
+    <circle cx="50" cy="50" r="49" stroke-width="2" stroke-opacity="0.4" stroke="#000000" fill="url(#radialGradient-1)" />
 </svg>
 </div>
 
