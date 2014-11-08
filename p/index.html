@@ -16,7 +16,7 @@
 
 body {
     position: relative;
-    background-color: rgb(158,238,231);
+    background-color: #C1C6CB;
 }
 
 .indicator {
@@ -25,8 +25,9 @@ body {
     left: 30px;
     height: 253px;
     width: 0px;
-    background-color: rgba(255,0,0,.2);
+    background-color: rgba(99,110,121,0.5);
     transition-duration: 300ms;
+    z-index: -1;
 }
 
 .circle {
@@ -96,30 +97,32 @@ var UDUR = '300ms';
 var map;
 
 $(function () {
-    var RANDOM_HUE_PERCENT = 1;
-
     var map = new Map();
     var box = new EvalBox();
 
     var bms = new BallMoveMobLeaveService(ball, map, box);
+
     var up = function () {
 
         bms.up();
         indicator.forward();
 
     };
+
     var down = function () {
 
         bms.down();
         indicator.forward();
 
     };
+
     var left = function () {
 
         bms.left();
         indicator.forward();
 
     };
+
     var right = function () {
 
         bms.right();
@@ -247,8 +250,8 @@ var EvalBox = (function () {
 
     var goodbye = function (left, right, delay) {
         setTimeout(function () {
-            left.$dom.css('background-color', 'rgba(0,0,0,0)');
-            right.$dom.css('background-color', 'rgba(0,0,0,0)');
+            left.fadeAway();
+            right.fadeAway();
         }, delay);
     };
 
@@ -347,12 +350,11 @@ var Wanderer = (function () {
     var exports = function (x, y) {
         this.x = x;
         this.y = y;
-        this.$dom = $('<div />').css({
+        this.$dom = $('<img src="../img/nim.svg" />').css({
             'position': 'absolute',
             'width': '51px',
             'height': '51px',
             'transition-duration': UDUR,
-            'border-radius': '25px'
         });
     };
 
@@ -384,19 +386,11 @@ var Wanderer = (function () {
     };
 
     wPrototype.setFemaleColor = function () {
-        this.setColor(Color.black().hue(dice(20)).saturation(90 + dice(10)).light(50).alpha(0.7))
+        this.$dom.attr('src', '../img/neef.svg');
     };
 
     wPrototype.setMaleColor = function () {
-        this.setColor(Color.black().hue(dice(20) + 210).saturation(90 + dice(10)).light(50).alpha(0.7))
-    };
-
-    wPrototype.setColor = function (color) {
-        this.color = color;
-
-        this.$dom.css('background-color', this.color.css());
-
-        return this;
+        this.$dom.attr('src', '../img/nim.svg');
     };
 
     wPrototype.setMetrics = function (top, left, unit, wrapX, wrapY) {
@@ -416,6 +410,20 @@ var Wanderer = (function () {
         });
     };
 
+    wPrototype.fadeAway = function () {
+        this.$dom.css('opacity', 0);
+
+        var that = this;
+
+        setTimeout(function () {
+            that.remove();
+        }, 1000);
+    };
+
+    wPrototype.remove = function () {
+        this.$dom.remove();
+    };
+
     wPrototype.move = function (x, y) {
         this.x += this.wrapX + x;
         this.x %= this.wrapX;
@@ -429,15 +437,6 @@ var Wanderer = (function () {
     wPrototype.down = function () { this.move(0, 1); };
     wPrototype.left = function () { this.move(-1, 0); };
     wPrototype.right = function () { this.move(1, 0); };
-
-    wPrototype.random = function () {
-        this[['up', 'down', 'left', 'right'][dice(4)]]();
-    };
-
-    wPrototype.randomHue = function () {
-        this.color.hue(dice(360));
-        this.$dom.css('background-color', this.color.css());
-    };
 
     return exports;
 }());
@@ -522,8 +521,6 @@ var indicator = {
 
 
 <div class="wrapper"></div>
-
-
 
 </body>
 </html>
