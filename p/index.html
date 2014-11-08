@@ -94,8 +94,6 @@ var UNIT = 101;
 
 var UDUR = '300ms';
 
-var map;
-
 $(function () {
     var map = new Map();
     var box = new EvalBox();
@@ -214,6 +212,8 @@ var EvalBox = (function () {
     };
 
     var evaluate = function (left, right) {
+        PointBox.countUp(left.gender, right.gender);
+
         if (left.gender === right.gender) {
 
             apart(left, right, 300);
@@ -278,6 +278,8 @@ var EvalBox = (function () {
     return exports;
 
 }());
+
+
 
 var Map = (function () {
     'use strict';
@@ -479,6 +481,33 @@ var indicator = {
     },
 };
 
+
+// View Class
+
+var PointBox = {
+    reset: function () {
+    },
+    getCount: function (gender0, gender1) {
+        return parseInt(this.getTarget(gender0, gender1).text());
+    },
+    setCount: function (gender0, gender1, count) {
+        this.getTarget(gender0, gender1).text(count);
+    },
+    countUp: function (gender0, gender1) {
+        this.setCount(gender0, gender1, this.getCount(gender0, gender1) + 1);
+    },
+    reset: function () {
+        this.setCount('f', 'f', 0);
+        this.setCount('m', 'f', 0);
+        this.setCount('f', 'm', 0);
+        this.setCount('m', 'm', 0);
+    },
+    getTarget: function (gender0, gender1) {
+        var genderPair = gender0 + gender1;
+        return $('.point .' + genderPair);
+    }
+};
+
 </script>
 
 <body>
@@ -521,6 +550,13 @@ var indicator = {
 
 
 <div class="wrapper"></div>
+
+<div class="point" style="font-family: menlo; margin-left: 300px;">
+m + f = <span class="mf">0</span><br />
+f + m = <span class="fm">0</span><br />
+m + m = <span class="mm">0</span><br />
+f + f = <span class="ff">0</span><br />
+</div>
 
 </body>
 </html>
