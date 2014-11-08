@@ -217,13 +217,11 @@ var EvalBox = (function () {
         if (left.gender === right.gender) {
 
             apart(left, right, 300);
-            goodbye(left, right, 800);
 
             return;
         }
 
         close(left, right, 300);
-        goodbye(left, right, 800);
 
     };
 
@@ -232,6 +230,8 @@ var EvalBox = (function () {
         setTimeout(function () {
             a.left();
             b.right();
+
+            goodbyeUnhappy(a, b, 300);
         }, delay);
 
     };
@@ -244,14 +244,22 @@ var EvalBox = (function () {
 
             a.up();
             b.up();
+
+            goodbyeHappy(a, b, 300);
         }, delay);
 
     };
 
-    var goodbye = function (left, right, delay) {
+    var goodbyeUnhappy = function (left, right, delay) {
         setTimeout(function () {
-            left.fadeAway();
-            right.fadeAway();
+            left.fadeAwayUnhappy();
+            right.fadeAwayUnhappy();
+        }, delay);
+    };
+    var goodbyeHappy = function (left, right, delay) {
+        setTimeout(function () {
+            left.fadeAwayHappy();
+            right.fadeAwayHappy();
         }, delay);
     };
 
@@ -352,7 +360,7 @@ var Wanderer = (function () {
     var exports = function (x, y) {
         this.x = x;
         this.y = y;
-        this.$dom = $('<img src="../img/nim.svg" />').css({
+        this.$dom = $('<img />').css({
             'position': 'absolute',
             'width': '51px',
             'height': '51px',
@@ -412,14 +420,25 @@ var Wanderer = (function () {
         });
     };
 
-    wPrototype.fadeAway = function () {
-        this.$dom.css('opacity', 0);
+    wPrototype.fadeAwayHappy = function () {
+        this.$dom.css('transform', 'scale(2)');
+        this.fadeAway();
+    };
 
+    wPrototype.fadeAwayUnhappy = function () {
+        this.$dom.css('transform', 'rotate(45deg)');
+        this.fadeAway();
+    };
+
+    wPrototype.fadeAway = function () {
         var that = this;
+        setTimeout(function () {
+        that.$dom.css('opacity', 0);
 
         setTimeout(function () {
             that.remove();
         }, 1000);
+        }, 300);
     };
 
     wPrototype.remove = function () {
