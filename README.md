@@ -1,14 +1,3 @@
-# Long Dream main view prototyping
+# LD level editor prototype
 
-- [#1](http://kt3k.github.io/LD-proto/s/1.html)
-- [#2](http://kt3k.github.io/LD-proto/s/2.html)
-- [#3](http://kt3k.github.io/LD-proto/s/3.html)
-- [#4](http://kt3k.github.io/LD-proto/s/4.html)
-- [#5](http://kt3k.github.io/LD-proto/s/5.html)
-- [#6](http://kt3k.github.io/LD-proto/s/6.html)
-- [#7](http://kt3k.github.io/LD-proto/s/7.html)
-- [#8](http://kt3k.github.io/LD-proto/s/8.html)
-- [#9](http://kt3k.github.io/LD-proto/s/9.html)
-- [#10](http://kt3k.github.io/LD-proto/s/10.html)
-- [#11](http://kt3k.github.io/LD-proto/s/11.html)
-- [#12](http://kt3k.github.io/LD-proto/s/12.html)
+- [prototype (master)](http://kt3k.github.io/LD-proto2/p/index.html)
