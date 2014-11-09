@@ -97,8 +97,20 @@ var SUDUR = NUDUR + 'ms';
 
 var UDUR = NUDUR + 'ms';
 
+getHash = function () {
+    return location.hash.substring(1);
+};
+
 $(function () {
-    map = Map.createFromBomList(randomBomList(Map.M, Map.N));
+    var num = getHash() || 0;
+
+    $.getJSON('../level/' + num + '.json', function (level) {
+        init(level.boms);
+    });
+});
+
+var init = function (bomList) {
+    map = Map.createFromBomList(bomList);
 
     var box = new EvalBox();
 
@@ -154,7 +166,7 @@ $(function () {
     };
 
     bindEvents(up, down, left, right, command);
-});
+};
 
 var BallMoveMobLeaveService = (function () {
     'use strict';
@@ -372,7 +384,6 @@ var Map = (function () {
     /**
      *
      *
-     *
      * @return {Wanderer}
      */
     exports.createCellFromBom = function (bom) {
@@ -411,6 +422,7 @@ var Map = (function () {
         return this;
     };
 
+
     mapPrototype.commandAll = function (command, args) {
 
         this.cells.forEach(function (cell) {
@@ -419,16 +431,7 @@ var Map = (function () {
 
     };
 
-    mapPrototype.some = function (percent, command, args) {
-
-        this.cells.forEach(function (cell) {
-            if (Math.random() < percent / 100) {
-                cell[command].apply(cell, args);
-            }
-        });
-
-    };
-
+    // help item ?
     mapPrototype.allUp = function () { this.commandAll('up'); };
     mapPrototype.allDown = function () { this.commandAll('down'); };
     mapPrototype.allRight = function () { this.commandAll('right'); };
@@ -482,19 +485,6 @@ var Wanderer = (function () {
 
         this.setGender(gender);
         this.setMetrics(left, top, unit, m, n);
-    };
-
-    exports.createFromObject = function (obj) {
-        return new exports(obj.x, obj.y, obj.gender);
-    };
-
-    exports.planA = function (x, y) {
-        var w = new exports(x, y)
-            .setGender(sample('f', 'm'))
-            .setMetrics(LEFT, TOP, UNIT, 3, 11);
-
-        w.locate();
-        return w;
     };
 
     var wPrototype = exports.prototype;
