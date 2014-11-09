@@ -98,7 +98,8 @@ var SUDUR = NUDUR + 'ms';
 var UDUR = NUDUR + 'ms';
 
 $(function () {
-    var map = new Map();
+    map = Map.createFromBomList(randomBomList(Map.M, Map.N));
+
     var box = new EvalBox();
 
     var bms = new BallMoveMobLeaveService(ball, map, box);
@@ -189,10 +190,10 @@ var BallMoveMobLeaveService = (function () {
         return true;
     };
 
-    bmsPrototype.up = function () { this.move('up'); };
-    bmsPrototype.down = function () { this.move('down'); };
-    bmsPrototype.right = function () { this.move('right'); };
-    bmsPrototype.left = function () { this.move('left'); };
+    bmsPrototype.up = function () { return this.move('up'); };
+    bmsPrototype.down = function () { return this.move('down'); };
+    bmsPrototype.right = function () { return this.move('right'); };
+    bmsPrototype.left = function () { return this.move('left'); };
 
     var Mobs = function (wanderers) {
         this.wanderers = wanderers;
@@ -226,6 +227,12 @@ var EvalBox = (function () {
 
     var exports = function () {
     };
+
+    exports.TOP = -20;
+    exports.LEFT = 40;
+    exports.UNIT = UNIT / 2;
+    exports.M = 5;
+    exports.N = 5;
 
     var boxPrototype = exports.prototype;
 
@@ -299,7 +306,7 @@ var EvalBox = (function () {
     };
 
     boxPrototype.involve = function (wanderer) {
-        wanderer.setMetrics(-20, 40, UNIT / 2, 5, 5);
+        wanderer.setMetrics(exports.LEFT, exports.TOP, exports.UNIT, exports.M, exports.N);
     };
 
     boxPrototype.setLeft = function (wanderer) {
@@ -323,6 +330,20 @@ var EvalBox = (function () {
 }());
 
 
+var randomBomList = function (n, m) {
+
+    var array = [];
+
+    for (var i = 0; i < n; i++) {
+        for (var j = 0; j < m; j++) {
+            array.push({x: i, y: j, gender: sample('f', 'm')});
+        }
+    };
+
+    return array;
+};
+
+
 
 var Map = (function () {
     'use strict';
@@ -330,19 +351,65 @@ var Map = (function () {
     var exports = function () {
         var cells = this.cells = [];
 
-        this.rows = [0, 1, 2].map(function (x) {
-            return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(function (y) {
-                var w = Wanderer.planA(x, y);
-                w.element().prependTo(document.body);
+        this.$dom = $(document.body);
+    };
 
-                cells.push(w);
+    exports.TOP = TOP;
+    exports.LEFT = LEFT;
+    exports.UNIT = UNIT;
+    exports.M = 3;
+    exports.N = 12;
 
-                return w;
-            });
-        });
+    /**
+     *
+     *
+     * @return {Map}
+     */
+    exports.createFromBomList = function (bomList) {
+        return new exports().loadFromBomList(bomList);
+    };
+
+    /**
+     *
+     *
+     *
+     * @return {Wanderer}
+     */
+    exports.createCellFromBom = function (bom) {
+        return new Wanderer(bom.x, bom.y, bom.gender, exports.LEFT, exports.TOP, exports.UNIT, exports.M, exports.N);
     };
 
     var mapPrototype = exports.prototype;
+
+    mapPrototype.reset = function () {
+        this.cells.forEach(function (cell) { cell.remove(); });
+
+        this.cells = [];
+    };
+
+    mapPrototype.loadFromBomList = function (bomList) {
+        bomList.forEach(function (bom) {
+            this.loadOne(exports.createCellFromBom(bom));
+        }, this);
+
+        return this;
+    };
+
+    mapPrototype.loadList = function (list) {
+        list.forEach(function (cell) { this.loadOne(cell); }, this);
+
+        return this;
+    };
+
+    mapPrototype.loadOne = function (cell) {
+        this.cells.push(cell);
+
+        cell.locate();
+
+        cell.prependTo(this.$dom);
+
+        return this;
+    };
 
     mapPrototype.commandAll = function (command, args) {
 
@@ -402,21 +469,29 @@ var Map = (function () {
 var Wanderer = (function () {
     'use strict';
 
-    var exports = function (x, y) {
+    var exports = function (x, y, gender, left, top, unit, m, n) {
         this.x = x;
         this.y = y;
+
         this.$dom = $('<img />').css({
             'position': 'absolute',
             'width': '51px',
             'height': '51px',
             'transition-duration': UDUR,
         });
+
+        this.setGender(gender);
+        this.setMetrics(left, top, unit, m, n);
+    };
+
+    exports.createFromObject = function (obj) {
+        return new exports(obj.x, obj.y, obj.gender);
     };
 
     exports.planA = function (x, y) {
         var w = new exports(x, y)
             .setGender(sample('f', 'm'))
-            .setMetrics(TOP, LEFT, UNIT, 3, 11);
+            .setMetrics(LEFT, TOP, UNIT, 3, 11);
 
         w.locate();
         return w;
@@ -426,6 +501,10 @@ var Wanderer = (function () {
 
     wPrototype.element = function () {
         return this.$dom;
+    };
+
+    wPrototype.prependTo = function (dom) {
+        this.$dom.prependTo(dom);
     };
 
     wPrototype.setGender = function (gender) {
@@ -448,9 +527,9 @@ var Wanderer = (function () {
         this.$dom.attr('src', '../img/nim.svg');
     };
 
-    wPrototype.setMetrics = function (top, left, unit, wrapX, wrapY) {
-        this.offsetY = top;
+    wPrototype.setMetrics = function (left, top, unit, wrapX, wrapY) {
         this.offsetX = left;
+        this.offsetY = top;
         this.unit = unit;
         this.wrapX = wrapX;
         this.wrapY = wrapY;
