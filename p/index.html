@@ -117,12 +117,15 @@ var LevelPhaseController = (function () {
     lpcPrototype.init = function (level) {
         this.map.loadFromBomList(level.boms);
 
-        var bms = new BallMoveMobLeaveService(this.ball, this.map, this.evalBox, this.indicator);
+        var bms = new BallMoveMobLeaveService(this.ball, this.map, this.evalBox);
 
-        var up = function () { bms.up(); };
-        var down = function () { bms.down(); };
-        var left = function () { bms.left(); };
-        var right = function () { bms.right(); };
+        var onMoveSuccess = this.onMoveSuccess.bind(this);
+        var onMoveFailure = this.onMoveFailure.bind(this);
+
+        var up = function () { bms.up().then(onMoveSuccess, onMoveFailure); };
+        var down = function () { bms.down().then(onMoveSuccess, onMoveFailure); };
+        var left = function () { bms.left().then(onMoveSuccess, onMoveFailure); };
+        var right = function () { bms.right().then(onMoveSuccess, onMoveFailure); };
 
         bindEvents(up, down, left, right, this.reset.bind(this), this.score.bind(this));
     };
@@ -158,6 +161,10 @@ var LevelPhaseController = (function () {
     };
 
     lpcPrototype.onMoveSuccess = function () {
+        this.indicator.forward();
+    };
+
+    lpcPrototype.onMoveFailure = function () {
     };
 
     return exports;
@@ -196,7 +203,7 @@ var BallMoveMobLeaveService = (function () {
 
             this.ball.refuseToMove();
 
-            return false;
+            return Promise.reject();
         }
 
         this.ball[dir]();
@@ -205,7 +212,7 @@ var BallMoveMobLeaveService = (function () {
 
         this.box.push(w);
 
-        return true;
+        return Promise.resolve();
     };
 
     bmsPrototype.up = function () { return this.move('up'); };

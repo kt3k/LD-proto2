@@ -47,6 +47,7 @@ var unbindEvents = function () {
         .off('rightkey')
         .off('leftkey')
         .off('downkey')
+        .off('score');
 
     $('.reset')
         .off('click');
