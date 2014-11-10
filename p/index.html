@@ -109,6 +109,7 @@ var LevelPhaseController = (function () {
         this.indicator = indicator; // singleton
         this.pointBox = PointBox; // singleton
         this.ball = ball; // singleton
+        this.scoreBox = ScoreBox;
     };
 
     var lpcPrototype = exports.prototype;
@@ -123,7 +124,7 @@ var LevelPhaseController = (function () {
         var left = function () { bms.left(); };
         var right = function () { bms.right(); };
 
-        bindEvents(up, down, left, right, this.reset.bind(this));
+        bindEvents(up, down, left, right, this.reset.bind(this), this.score.bind(this));
     };
 
     lpcPrototype.loadCurrent = function () {
@@ -141,10 +142,15 @@ var LevelPhaseController = (function () {
         this.pointBox.reset();
         this.evalBox.reset();
         this.indicator.reset();
+        this.scoreBox.reset();
 
         var that = this;
 
         setTimeout(function () { that.loadCurrent(); }, 500);
+    };
+
+    lpcPrototype.score = function (event, param) {
+        this.scoreBox.add(param.score);
     };
 
     lpcPrototype.getLevel = function (path) {
@@ -269,17 +275,26 @@ var EvalBox = (function () {
     };
 
     var evaluate = function (left, right) {
+
         PointBox.countUp(left.gender, right.gender);
 
         if (left.gender === right.gender) {
+
+            score(10);
 
             apart(left, right, 300);
 
             return;
         }
 
+        score(100);
+
         close(left, right, 300);
 
+    };
+
+    var score = function (score) {
+        $(document).trigger('score', {score: score});
     };
 
     var apart = function (a, b, delay) {
@@ -603,7 +618,7 @@ var ball = {
     },
 
     move: function (x, y) {
-        console.log('ball move');
+        _console.log('ball move');
         this.x += x;
         this.x %= this.MAX;
         this.y += y;
@@ -686,6 +701,24 @@ var PointBox = {
     }
 };
 
+var ScoreBox = {
+    add: function (point) {
+        this.setScore(this.getScore() + point);
+    },
+    getScore: function () {
+        return parseInt(this.getTarget().text());
+    },
+    setScore: function (score) {
+        this.getTarget().text(score);
+    },
+    reset: function () {
+        this.setScore(0);
+    },
+    getTarget: function () {
+        return $('.point .level-score');
+    }
+};
+
 </script>
 
 <body>
@@ -734,6 +767,7 @@ m + f = <span class="mf">0</span><br />
 f + m = <span class="fm">0</span><br />
 m + m = <span class="mm">0</span><br />
 f + f = <span class="ff">0</span><br />
+Score = <span class="level-score">0</span><br />
 </div>
 
 </body>
