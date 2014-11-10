@@ -7,7 +7,7 @@ var coinToss = function () { return dice(2); };
 
 var sample = function (array) { return arguments[dice(arguments.length)]; };
 
-var bindEvents = function (up, down, left, right, command) {
+var bindEvents = function (up, down, left, right, reset) {
 
     $('.wrapper')
         .swipeCross()
@@ -24,7 +24,27 @@ var bindEvents = function (up, down, left, right, command) {
         .on('leftkey', function () { console.log('leftkey'); left(); })
         .on('downkey', function () { console.log('downkey'); down(); });
 
-    $(document)
-        .on('command', function () { console.log('command'); command(e); })
+    $('.reset')
+        .on('click', function () { unbindEvents(); reset(); });
 
+};
+
+var unbindEvents = function () {
+    $('.wrapper')
+        .swipeCrossUnbind()
+        .off('swipeup')
+        .off('swipeudown')
+        .off('swipeleft')
+        .off('swiperight')
+        .off('swipecancel');
+
+    $(document)
+        .arrowkeysUnbind()
+        .off('upkey')
+        .off('rightkey')
+        .off('leftkey')
+        .off('downkey')
+
+    $('.reset')
+        .off('click');
 };

@@ -97,77 +97,77 @@ var SUDUR = NUDUR + 'ms';
 
 var UDUR = NUDUR + 'ms';
 
-getHash = function () {
-    return location.hash.substring(1);
-};
 
+// Application layer
+var LevelPhaseController = (function () {
+    'use strict';
+
+    var exports = function () {
+        this.map = new Map();
+        this.evalBox = new EvalBox();
+
+        this.indicator = indicator; // singleton
+        this.pointBox = PointBox; // singleton
+        this.ball = ball; // singleton
+    };
+
+    var lpcPrototype = exports.prototype;
+
+    lpcPrototype.init = function (level) {
+        this.map.loadFromBomList(level.boms);
+
+        var bms = new BallMoveMobLeaveService(this.ball, this.map, this.evalBox, this.indicator);
+
+        var up = function () { bms.up(); };
+        var down = function () { bms.down(); };
+        var left = function () { bms.left(); };
+        var right = function () { bms.right(); };
+
+        bindEvents(up, down, left, right, this.reset.bind(this));
+    };
+
+    lpcPrototype.loadCurrent = function () {
+        var path = (window.location.hash.substring(1) || 0) + '.json';
+
+        var that = this;
+
+        this.getLevel(path).then(function (level) {
+            that.init(level);
+        });
+    };
+
+    lpcPrototype.reset = function () {
+        this.map.empty();
+        this.pointBox.reset();
+        this.evalBox.reset();
+        this.indicator.reset();
+
+        var that = this;
+
+        setTimeout(function () { that.loadCurrent(); }, 500);
+    };
+
+    lpcPrototype.getLevel = function (path) {
+        return $.getJSON('../level/' + path)
+    };
+
+    lpcPrototype.onMoveSuccess = function () {
+    };
+
+    return exports;
+
+}());
+
+
+// main
 $(function () {
-    var num = getHash() || 0;
+    var lpc = new LevelPhaseController();
 
-    $.getJSON('../level/' + num + '.json', function (level) {
-        init(level.boms);
-    });
+    lpc.loadCurrent();
 });
 
-var init = function (bomList) {
-    map = Map.createFromBomList(bomList);
 
-    var box = new EvalBox();
-
-    var bms = new BallMoveMobLeaveService(ball, map, box);
-
-    var up = function () {
-
-        var success = bms.up();
-
-        if (success) {
-            onMoveSuccess();
-        }
-
-    };
-
-    var down = function () {
-
-        var success = bms.down();
-
-        if (success) {
-            onMoveSuccess();
-        }
-
-    };
-
-    var left = function () {
-
-        var success = bms.left();
-
-        if (success) {
-            onMoveSuccess();
-        }
-
-    };
-
-    var right = function () {
-
-        var success = bms.right();
-
-        if (success) {
-            onMoveSuccess();
-        }
-
-    };
-
-    var onMoveSuccess = function () {
-
-        indicator.forward();
-
-    };
-
-    var command = function () {
-    };
-
-    bindEvents(up, down, left, right, command);
-};
-
+// Domain layer
 var BallMoveMobLeaveService = (function () {
     'use strict';
 
@@ -207,6 +207,7 @@ var BallMoveMobLeaveService = (function () {
     bmsPrototype.right = function () { return this.move('right'); };
     bmsPrototype.left = function () { return this.move('left'); };
 
+    // `Mobs` role (extends Map)
     var Mobs = function (wanderers) {
         this.wanderers = wanderers;
     };
@@ -234,6 +235,8 @@ var BallMoveMobLeaveService = (function () {
 
 }());
 
+
+// The box above the grid
 var EvalBox = (function () {
     'use strict';
 
@@ -337,26 +340,20 @@ var EvalBox = (function () {
         this.right = wanderer;
     };
 
+    boxPrototype.reset = function () {
+        if (this.left != null) { this.left.remove(); }
+        if (this.right != null) { this.right.remove(); }
+
+        this.left = null;
+        this.right = null;
+    };
+
     return exports;
 
 }());
 
 
-var randomBomList = function (n, m) {
-
-    var array = [];
-
-    for (var i = 0; i < n; i++) {
-        for (var j = 0; j < m; j++) {
-            array.push({x: i, y: j, gender: sample('f', 'm')});
-        }
-    };
-
-    return array;
-};
-
-
-
+// List of boms
 var Map = (function () {
     'use strict';
 
@@ -392,7 +389,7 @@ var Map = (function () {
 
     var mapPrototype = exports.prototype;
 
-    mapPrototype.reset = function () {
+    mapPrototype.empty = function () {
         this.cells.forEach(function (cell) { cell.remove(); });
 
         this.cells = [];
@@ -469,6 +466,8 @@ var Map = (function () {
 
 }());
 
+
+// A bom
 var Wanderer = (function () {
     'use strict';
 
@@ -577,6 +576,7 @@ var Wanderer = (function () {
 }());
 
 
+// The ball you move, or swipe
 var ball = {
     x: 1,
     y: 1,
@@ -628,23 +628,40 @@ var ball = {
     },
 };
 
+
+// indicator of the current progress
 var indicator = {
     x: 0,
     y: 250,
+    initialX: 0,
+    initialY: 250,
     forward: function () {
         this.x += 303/36;
         this.x %= 3 * UNIT + 1;
         this.y += 303/36;
         if (this.y >= 303) { this.y = 303; }
 
-        $('.indicator').css('width', Math.floor(this.x) + 'px');
-        $('.indicator').css('height', Math.floor(this.y) + 'px');
+        return this.locate();
     },
+    reset: function () {
+        this.x = this.initialX;
+        this.y = this.initialY;
+
+        return this.locate();
+    },
+    locate: function () {
+        this.getTarget().css('width', Math.floor(this.x) + 'px');
+        this.getTarget().css('height', Math.floor(this.y) + 'px');
+
+        return this;
+    },
+    getTarget: function () {
+        return $('.indicator');
+    }
 };
 
 
-// View Class
-
+// displaying current point
 var PointBox = {
     reset: function () {
     },
@@ -672,6 +689,8 @@ var PointBox = {
 </script>
 
 <body>
+
+<button class="reset">reset</button>
 
 <div class="indicator round-bottom-left round-top-right"></div>
 
