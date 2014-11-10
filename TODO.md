@@ -1,4 +1,5 @@
 # TODO
-- Level generator
+- scaffold middleman proj
 
 # DONE
+- Level generator
