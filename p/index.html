@@ -658,6 +658,7 @@ var indicator = {
     initialX: 0,
     initialY: 250,
     forward: function () {
+        return;
         this.x += 303/36;
         this.x %= 3 * UNIT + 1;
         this.y += 303/36;
@@ -762,7 +763,7 @@ var ScoreBox = {
             <stop stop-color="#000000" stop-opacity="0.7" offset="100%"></stop>
         </radialGradient>
     </defs>
-    <circle cx="50" cy="50" r="49" stroke-width="2" stroke-opacity="0.4" stroke="#000000" fill="url(#radialGradient-1)" />
+    <circle cx="50" cy="50" r="49" stroke-width="2" stroke-opacity="0.4" stroke="#000000" fill="#909090" fill-opacity="0.5"/>
 </svg>
 </div>
 
