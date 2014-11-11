@@ -7,11 +7,13 @@ var coinToss = function () { return dice(2); };
 
 var sample = function (array) { return arguments[dice(arguments.length)]; };
 
-var _console = {log: function () {}};
+var _console = {log: function () { /*console.log.apply(console, arguments);*/ }};
+
+var swipe$dom;
 
 var bindEvents = function (up, down, left, right, reset, score) {
 
-    $('.wrapper')
+    swipe$dom = $('.wrapper')
         .swipeCross()
         .on('swipeup', function () { _console.log('swipeup'); up();})
         .on('swiperight', function () { _console.log('swiperight'); right(); })
@@ -33,10 +35,10 @@ var bindEvents = function (up, down, left, right, reset, score) {
 };
 
 var unbindEvents = function () {
-    $('.wrapper')
+    swipe$dom
         .swipeCrossUnbind()
         .off('swipeup')
-        .off('swipeudown')
+        .off('swipedown')
         .off('swipeleft')
         .off('swiperight')
         .off('swipecancel');
