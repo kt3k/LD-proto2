@@ -52,3 +52,11 @@ var unbindEvents = function () {
     $('.reset')
         .off('click');
 };
+
+var wait = function (n) {
+    return function () {
+        return new Promise(function (resolve) {
+            setTimeout(resolve, n);
+        });
+    };
+};
