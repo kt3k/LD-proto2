@@ -21,10 +21,20 @@ body {
 }
 
 .splash-logo {
+    position: absolute;
+    left: 25%;
     width: 50%;
     margin-top: 180px;
     transition-duration: 500ms;
     transition-timing-function: ease;
+    opacity: 0;
+}
+
+@-webkit-keyframes logo-anim {
+    0%   { opacity: 0; transform: translate(0, -10px); }
+    25%  { opacity: 1; transform: translate(0,     0); }
+    75%  { opacity: 1; transform: translate(0,     0); }
+    100% { opacity: 0; transform: translate(0,  10px); }
 }
 
 </style>
@@ -39,71 +49,34 @@ pages.splash = (function () {
 
     exports.main = function () {
 
-        var logo = new Logo('../img/kt3k-logo-v1.svg');
+        wait(100)
+            .then(logoAnim('../img/kt3k-logo-v1.svg'))
+            .then(logoAnim('../img/kt3k-logo-v2.svg'))
+            .then(logoAnim('../img/straw-logo.svg'))
+            //.then(goToTitle);
 
-        logo.appendTo(document.body);
-
-        logo.animation().then(function () {
-
-            var logo = new Logo('../img/kt3k-logo-v2.svg');
-
-            logo.appendTo(document.body);
-
-            return logo.animation();
-
-        }).then(function () {
-
-            var logo = new Logo('../img/straw-logo.svg');
-
-            logo.appendTo(document.body);
-
-            return logo.animation();
-
-        }).then(function () {
-            location.href = './title.html';
-        });
     };
 
-    var Logo = function (path) {
-        this.img = $('<img />').attr('src', path)
-
-        this.reset();
+    var goToTitle = function () {
+        location.href = 'title.html';
     };
 
-    Logo.prototype.reset = function (dom) {
-        this.img
-            .addClass('splash-logo')
-            .css('opacity', 0)
-            .css('transform', 'translate(0, -10px)');
-    };
+    var logoAnim = function (path, dur) {
+        return function () {
+            var dur = dur || 1800;
 
-    Logo.prototype.appendTo = function (dom) {
-        this.img.appendTo(dom);
+            var $img = $('<img />')
+                .attr('src', path)
+                .addClass('splash-logo')
+                .css('-webkit-animation', 'logo-anim ' + dur + 'ms')
+                .appendTo(document.body);
 
-        return this;
-    };
-
-    Logo.prototype.animation = function () {
-        var logo = this.img;
-
-        return wait(100)().then(function () {
-
-            logo.css('opacity', 1);
-            logo.css('transform', 'translate(0, 0)');
-
-        }).then(wait(1000)).then(function () {
-
-            logo.css('opacity', 0);
-            logo.css('transform', 'translate(0, 10px)');
-
-        }).then(wait(500)).then(function () {
-
-            logo.remove();
-
-        });
+            return wait(dur);
+        };
     };
 
     return exports;
+
 }());
 
 $(pages.splash.main);

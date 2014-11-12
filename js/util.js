@@ -56,9 +56,7 @@ var unbindEvents = function () {
 };
 
 var wait = function (n) {
-    return function () {
-        return new Promise(function (resolve) {
-            setTimeout(resolve, n);
-        });
-    };
+    return new Promise(function (resolve) {
+        setTimeout(resolve, n);
+    });
 };
